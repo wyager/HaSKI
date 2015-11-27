@@ -1,59 +1,16 @@
+module HaSKI2 (run) where
 {-# LANGUAGE ScopedTypeVariables #-}
 import CLaSH.Prelude hiding (shift, head, read)
-import qualified Data.Map.Strict as M
+import Defs (SKI(..), Ptr(..), Sized, Serialize, serialize, unserialize)
+import Memory (Memory, read, write)
 main = print "ayy"
 
 
-data Ptr a = Ptr (Signed 30) deriving (Eq, Show)
-
-class Sized a where
-    size :: Ptr a
 
 
-sizeOf :: Sized a => a -> Ptr a
-sizeOf _ = size
 
-instance forall a . Sized a => Enum (Ptr a) where
-    succ (Ptr a) = let Ptr sz = size :: Ptr a in Ptr (a + sz)
-    pred (Ptr a) = let Ptr sz = size :: Ptr a in Ptr (a - sz)
-    toEnum x     = let Ptr sz = size :: Ptr a in Ptr $ (toEnum x) * sz
-    fromEnum     = undefined
 
-instance Sized SKI where
-    size = Ptr 8
 
-class Serialize a where
-    unserialize :: BitVector 64 -> a
-    serialize :: a -> BitVector 64
-
-data SKI = S | K | I | T (Ptr SKI) (Ptr SKI) | L (Signed 8) deriving (Show)
-
-instance Serialize SKI where
-    serialize ski = tag ++# dataField
-        where
-        tag :: BitVector 4
-        tag = case ski of
-            S     -> 0
-            K     -> 1
-            I     -> 2
-            T _ _ -> 3
-            L _   -> 4
-        dataField :: BitVector 60
-        dataField = case ski of
-            T (Ptr a) (Ptr b) -> pack a ++# pack b
-            L c               -> pack c ++# 0
-            _                 -> 0
-    unserialize vec = case tag of
-        0 -> S
-        1 -> K
-        2 -> I
-        3 -> T ptr1 ptr2
-        4 -> L word
-        where
-        tag = slice d63 d60 vec
-        ptr1 = Ptr $ unpack (slice d59 d30 vec)
-        ptr2 = Ptr $ unpack (slice d29 d0 vec)
-        word = unpack $ slice d59 d52 vec
 
 
 data Heap a = Heap {base :: Ptr a, tip :: Ptr a} deriving (Show)
@@ -240,49 +197,29 @@ process old_state mem_reads = (state', reads', writes', output')
 process' :: State -> Signal (SKI,SKI) -> Signal (ReadRequest SKI, WriteRequest SKI, Output (Signed 8), State)
 process' state0 mem_reads = bundle (readReqs', writeReqs', output', state')
     where
-    initialized = register False (signal True)
-    state = regEn state0 initialized state' :: Signal State
+    state = register state0 state' :: Signal State
     (state', readReqs', writeReqs', output') = unbundle $ process <$> state <*> mem_reads
 
 
-run :: Memory -> State -> Signal (Output (Signed 8), State, Memory)
-run mem0 state0 = bundle (output, state, mem)
+run :: Memory -> Ptr SKI -> Signal (Output (Signed 8), State, Memory)
+run mem0 entry = bundle (output, state, mem)
     where
     mem = register mem0 (applyWriteReq <$> writeReqs <*> mem)
-    reads = doReadReqs <$> readReqs <*> mem
+    reads = register (doReadReqs read0 mem0) $ doReadReqs <$> readReqs <*> mem
     applyWriteReq NoWriteRequest mem = mem
-    applyWriteReq (OneWriteRequest (Ptr p) a) mem = write mem p (serialize a)
-    applyWriteReq (TwoWriteRequest (Ptr p1) a1 (Ptr p2) a2) mem = write (write mem p1 (serialize a1)) p2 (serialize a2)
+    applyWriteReq (OneWriteRequest p a) mem = write mem p (serialize a)
+    applyWriteReq (TwoWriteRequest p1 a1 p2 a2) mem = write (write mem p1 (serialize a1)) p2 (serialize a2)
     doReadReqs NoReadRequest mem = (undefined, undefined)
-    doReadReqs (OneReadRequest (Ptr p)) mem = (unserialize (read mem p), undefined)
-    doReadReqs (TwoReadRequest (Ptr p1) (Ptr p2)) mem = (unserialize (read mem p1), unserialize (read mem p2))
+    doReadReqs (OneReadRequest p) mem = (unserialize (read mem p), undefined)
+    doReadReqs (TwoReadRequest p1 p2) mem = (unserialize (read mem p1), unserialize (read mem p2))
     (readReqs, writeReqs, output, state) = unbundle $ process' state0 reads
+    ski0@(T a b) = unserialize (read mem0 entry)
+    state0 = initial ski0 (Ptr 0x10000) (Ptr 0x3FFFFFFF)
+    read0 = TwoReadRequest a b
 
 
 data State = State SKI (Stack SKI) (Heap SKI) deriving Show
 
-data Memory = Memory (M.Map (Signed 30) (BitVector 8))
-
-read :: Memory -> Signed 30 -> BitVector 64
-read (Memory map) ptr = (map M.! ptr + 0) ++#
-                        (map M.! ptr + 1) ++#
-                        (map M.! ptr + 2) ++#
-                        (map M.! ptr + 3) ++#
-                        (map M.! ptr + 4) ++#
-                        (map M.! ptr + 5) ++#
-                        (map M.! ptr + 6) ++#
-                        (map M.! ptr + 7)
-
-write :: Memory -> Signed 30 -> BitVector 64 -> Memory
-write (Memory map) ptr val = Memory $ 
-                             M.insert (ptr + 0) (slice d63 d56 val) . 
-                             M.insert (ptr + 2) (slice d55 d48 val) . 
-                             M.insert (ptr + 3) (slice d47 d40 val) . 
-                             M.insert (ptr + 4) (slice d39 d32 val) . 
-                             M.insert (ptr + 5) (slice d31 d24 val) . 
-                             M.insert (ptr + 6) (slice d23 d16 val) . 
-                             M.insert (ptr + 7) (slice d15 d8  val) . 
-                             M.insert (ptr + 7) (slice d7  d0  val) $ map
 
 initial :: SKI -> Ptr SKI -> Ptr SKI -> State
 initial ski sbase hbase = State ski (Stack None sbase 0) (Heap hbase hbase)
