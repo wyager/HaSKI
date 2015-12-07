@@ -6,10 +6,16 @@ import Intermediate.Model (Ptr(..), SKI(S,K,I,T,L))
 
 import Intermediate.Memory (Memory, set, clear, read)
 
-data Stack = Stack {base :: Ptr, count :: Word} deriving Show
+import Text.Printf (printf)
+
+data Stack = Stack {base :: Ptr, count :: Word}
+instance Show Stack where
+    show (Stack (Ptr base) count) = printf "Stack@%08x [%d in memory]" base count
 
 -- We're using a very wasteful non-freeing heap (for demo purposes)
-data Heap = Heap {tip :: Ptr} deriving Show
+data Heap = Heap {tip :: Ptr}
+instance Show Heap where
+    show (Heap (Ptr tip)) = printf "Heap@%08x" tip
 
 -- This is where the Intermediate model separates from the
 -- real model. Memory is external, not internal.
@@ -82,7 +88,7 @@ terminal Terminal = True
 terminal _        = False
 
 initial :: Memory -> State
-initial memory = State memory (Stack (Ptr 0x100000) 0) (Heap (Ptr maxBound)) (read memory (Ptr 0))
+initial memory = State memory (Stack (Ptr 0x100000) 0) (Heap (Ptr 0x00200000)) (read memory (Ptr 0))
 
 takeUntil f [] = []
 takeUntil f (x:xs) = if f x then [x] else x : takeUntil f xs

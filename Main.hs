@@ -1,2 +1,2 @@
 import Intermediate.Programs (evaluate, ababs)
-main = print $ evaluate ababs
+main = mapM_ putChar $ evaluate ababs

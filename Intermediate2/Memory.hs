@@ -1,8 +1,8 @@
-module Intermediate.Memory (Memory, fromStack, set, clear, read) where
+module Intermediate2.Memory (Memory, fromStack, set, clear, read) where
 
 import Prelude hiding (read)
 
-import Intermediate.Model (Ptr(..), SKI)
+import Intermediate2.Model (Ptr(..), SKI)
 
 import Data.IntMap.Strict (IntMap, fromList, insert, delete, (!), toList)
 
