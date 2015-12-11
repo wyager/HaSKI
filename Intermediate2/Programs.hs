@@ -1,8 +1,8 @@
-module Intermediate2.Programs (evaluate, ababs, double, swap) where
+module Intermediate2.Programs (Memory(..), evaluate, ababs, double, swap, memories) where
 
-import Intermediate2.Memory (Memory)
+import Intermediate2.Memory (Memory(..))
 import Intermediate2.Compile (compile)
-import Intermediate2.StackMachine (evaluate, steps, initial)
+import Intermediate2.StackMachine (evaluate, steps, initial, memories)
 
 ababs :: Memory
 ababs = compile "SII(S(K(ab))(SII))"

@@ -1,16 +1,16 @@
-module Intermediate.Memory (Memory(..), fromStack, set, clear, read) where
+module Hardware.Memory (Memory(..), fromStack, set, clear, read) where
 
 import Prelude hiding (read)
 
-import Intermediate.Model (Ptr(..), SKI)
+import Hardware.Model (Ptr(..), SKI)
 
-import Data.IntMap.Strict (IntMap, fromList, insert, delete, (!), toList)
+import Data.IntMap.Strict (IntMap, fromList, insert, delete, (!), toList, member)
 
 import Text.Printf (printf)
 
 import Data.List (intercalate)
 
-data Memory = Memory (IntMap SKI)
+data Memory = Memory (IntMap SKI) deriving (Eq)
 
 fromStack :: [SKI] -> Memory
 fromStack = Memory . fromList . zip [0..] . reverse
@@ -22,7 +22,9 @@ clear :: Memory -> Ptr -> Memory
 clear (Memory map) (Ptr ptr) = Memory $ delete ptr map
 
 read :: Memory -> Ptr -> SKI
-read (Memory map) (Ptr ptr) = map ! ptr
+read (Memory map) (Ptr ptr) = if ptr `member` map
+    then map ! ptr
+    else error ("Error: Invalid read pointer: " ++ show (Ptr ptr) ++ "\n" ++ show (Memory map))
 
 instance Show Memory where
     show (Memory entries) = ("\n" ++) $ intercalate "\n" $ map showEntry $ toList entries

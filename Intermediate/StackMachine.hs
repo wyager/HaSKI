@@ -1,4 +1,4 @@
-module Intermediate.StackMachine (evaluate, steps, initial) where
+module Intermediate.StackMachine (evaluate, steps, initial, memories) where
 
 import Prelude hiding (read)
 
@@ -99,5 +99,6 @@ steps program = takeUntil terminal $ iterate step $ initial program
 evaluate :: Memory -> [Char]
 evaluate program = [char | (Just char) <- map output $ steps program]
 
-
+memories :: Memory -> [Memory]
+memories = map memory . steps
 

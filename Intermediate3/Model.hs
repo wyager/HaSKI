@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Intermediate2.Model (SKI(S,K,I,T,L),Ptr(Ptr)) where
+module Intermediate3.Model (SKI(S,K,I,T,L),Ptr(Ptr)) where
 
 import Text.Printf (printf)
 

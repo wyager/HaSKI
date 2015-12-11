@@ -1,10 +1,10 @@
-module Intermediate2.StackMachine (evaluate, steps, initial, memories) where
+module Intermediate3.StackMachine (evaluate, steps, memories) where
 
 import Prelude hiding (read)
 
-import Intermediate2.Model (Ptr(..), SKI(S,K,I,T,L))
+import Intermediate3.Model (Ptr(..), SKI(S,K,I,T,L))
 
-import Intermediate2.Memory (Memory, set, clear, read)
+import Intermediate3.Memory (Memory, set, clear, read)
 
 import Text.Printf (printf)
 
@@ -23,43 +23,12 @@ instance Show Heap where
 
 -- This is where the Intermediate model separates from the
 -- real model. Memory is external, not internal.
-data State = State {stack :: Stack, heap :: Heap, current :: SKI} | Terminal deriving Show
-
-
---push :: SKI -> Stack -> Memory -> (Stack, Memory)
---push val (Stack base count) memory = (Stack (succ base) (succ count), set memory (succ base) val)
-
---push2 :: SKI -> SKI -> Stack -> Memory -> (Stack, Memory)
---push2 a b stack memory = uncurry (push a) $ push b stack memory
-
---pop :: Stack -> Memory -> (Stack, SKI)
---pop (Stack base count) memory = (Stack (pred base) (pred count), read memory base)
-
---pop2 :: Stack -> Memory -> (Stack, SKI, SKI)
---pop2 stack memory = (stack'', a, b)
---    where
---    (stack',  a) = pop stack  memory
---    (stack'', b) = pop stack' memory
-
---pop3 :: Stack -> Memory -> (Stack, SKI, SKI, SKI)
---pop3 stack memory = (stack'', a, b, c)
---    where
---    (stack', a, b) = pop2 stack memory
---    (stack'', c)   = pop stack' memory
-
---store :: Heap -> Memory -> SKI -> (Heap, Memory, Ptr)
---store (Heap tip) memory ski = (Heap (pred tip), set memory tip ski, tip)
-
---store2 :: Heap -> Memory -> SKI -> SKI -> (Heap, Memory, Ptr, Ptr)
---store2 heap memory a b = (heap'', memory'', aptr, bptr)
---    where
---    (heap',  memory',  aptr) = store heap  memory  a
---    (heap'', memory'', bptr) = store heap' memory' b
-
+data State = Initialized | State {stack :: Stack, heap :: Heap, current :: SKI} | Terminal deriving Show
 
 data Write = Write SKI Ptr 
 
-data MemRequest = Deref2NoPush' Ptr Ptr -- Deref 2 pointers, push nothing onto stack
+data MemRequest = LoadMain' Ptr
+                | Deref2NoPush' Ptr Ptr -- Deref 2 pointers, push nothing onto stack
                 | Deref2' Ptr Ptr Write -- Deref 2 pointers, push one term onto stack
                 | MemStackEmpty' -- No-op, effectively. We're popping, but nothing on mem stack
                 | MemStackHead' Ptr -- Deref one pointer (stack head)
@@ -67,16 +36,17 @@ data MemRequest = Deref2NoPush' Ptr Ptr -- Deref 2 pointers, push nothing onto s
                 | SPopMemStackEmpty' Write Write -- Store two things in the heap, pop nothing
                 | SPopMemStackNonEmpty' Write Write Ptr -- Store two things in the heap, pop one thing
 
-data MemResponse = Deref2 SKI SKI -- The response to a deref request from a T
+data MemResponse = LoadMain SKI
+                 | Deref2 SKI SKI -- The response to a deref request from a T
                  | MemStackEmpty -- We're popping from the stack, but there's nothing in RAM
                  | MemStackHead SKI -- We're popping from the stack, and there's an element in RAM
                  | MemStackTwo SKI SKI -- We're popping two from the stack, and two are available in RAM
                  | SPopMemStackEmpty -- We stored two things in the heap, but couldn't pop anything from RAM
                  | SPopMemStackNonEmpty SKI -- We stored two things in the heap and popped one thing from RAM
 
-
 serviceRequest :: Memory -> MemRequest -> MemResponse
 serviceRequest mem req = case req of
+    LoadMain' (Ptr 0)             -> LoadMain (read mem (Ptr 0))
     Deref2NoPush' a b             -> Deref2 (read mem a) (read mem b)
     Deref2' a b _                 -> Deref2 (read mem a) (read mem b)
     MemStackEmpty'                -> MemStackEmpty
@@ -105,6 +75,8 @@ step (state, mem) = (state', mem')
 -- and one to take the response from memory and process it.
 -- We also need to cache 3 stack entries
 step1 :: State -> MemRequest
+step1 Terminal = MemStackEmpty' -- Do nothing
+step1 Initialized = LoadMain' (Ptr 0)
 step1 (State stack heap current) = case current of
     T a b -> case cache stack of
         Three x y z -> Deref2' a b $ Write z (base stack)
@@ -128,6 +100,8 @@ step1 (State stack heap current) = case current of
         _ -> MemStackHead' (pred $ base stack)
 
 step2 :: State -> MemResponse -> State
+step2 Terminal _ = Terminal
+step2 Initialized (LoadMain ski) = State (Stack None (Ptr 0x100000) 0) (Heap (Ptr 0x200000)) ski
 step2 (State stack heap current) response = case (current, response) of
     (T _a _b, Deref2 a b) -> State (cachePush1 b stack) heap a
     (I,       pop)         -> case pop of
@@ -230,6 +204,7 @@ cachePush1 ski (Stack cache base n) = Stack (shiftOnL ski cache) base n
 
 output :: State -> Maybe Char
 output Terminal = Nothing
+output Initialized = Nothing
 output state = case current state of
     L c -> Just c
     _   -> Nothing
@@ -238,14 +213,11 @@ terminal :: State -> Bool
 terminal Terminal = True
 terminal _        = False
 
-initial :: Memory -> State
-initial memory = State (Stack None (Ptr 0x100000) 0) (Heap (Ptr 0x200000)) (read memory (Ptr 0))
-
 takeUntil f [] = []
 takeUntil f (x:xs) = if f x then [x] else x : takeUntil f xs
 
 steps :: Memory -> [(State, Memory)]
-steps program = takeUntil (terminal . fst) $ iterate step $ (initial program, program)
+steps program = takeUntil (terminal . fst) $ iterate step $ (Initialized, program)
 
 evaluate :: Memory -> [Char]
 evaluate program = [char | (Just char) <- map (output . fst) $ steps program]

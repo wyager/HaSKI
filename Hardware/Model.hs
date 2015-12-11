@@ -1,6 +1,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Intermediate2.Model (SKI(S,K,I,T,L),Ptr(Ptr)) where
+module Hardware.Model (SKI(S,K,I,T,L),Ptr(Ptr)) where
+
+import CLaSH.Prelude
 
 import Text.Printf (printf)
 

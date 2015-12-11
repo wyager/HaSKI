@@ -1,4 +1,4 @@
-module Intermediate2.Memory (Memory, fromStack, set, clear, read) where
+module Intermediate2.Memory (Memory(..), fromStack, set, clear, read) where
 
 import Prelude hiding (read)
 
@@ -10,7 +10,7 @@ import Text.Printf (printf)
 
 import Data.List (intercalate)
 
-data Memory = Memory (IntMap SKI)
+data Memory = Memory (IntMap SKI) deriving (Eq)
 
 fromStack :: [SKI] -> Memory
 fromStack = Memory . fromList . zip [0..] . reverse
