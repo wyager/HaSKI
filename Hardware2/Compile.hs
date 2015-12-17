@@ -1,20 +1,18 @@
-module Hardware.Compile (compile) where
+module Hardware2.Compile (compile) where
 
 import Prelude
 
-import Hardware.Model (SKI(S,K,I,T,L), Ptr(Ptr))
-
-import Hardware.Memory (Memory, fromStack)
+import Hardware2.Model (SKI(S,K,I,T,L), Ptr(Ptr), Output(Output))
 
 -- Representation without explicit pointers
-data SKI' = S' | K' | I' | T' SKI' SKI' | L' Char deriving Show
+data SKI' = S' | K' | I' | T' SKI' SKI' | L' Output deriving Show
 
 -- Parser from https://github.com/catseye/Dipple/blob/master/haskell/SKI.hs
 -- Thanks!
 parseChar 'S' = S'
 parseChar 'K' = K'
 parseChar 'I' = I'
-parseChar x   = L' x
+parseChar x   = L' . Output . toEnum . fromEnum $ x
 
 kParse (' ':rest) =
     kParse rest
@@ -42,6 +40,9 @@ bParse (char:rest) acc =
 
 parse = fst . kParse
 
+-- Takes the pointer-free Haskell representation and turns it into
+-- a representation with explicit pointers. The returned list corresponds
+-- to the memory starting at 0.
 linearize :: SKI' -> [SKI]
 linearize ski' = (\(stack,base,entry) -> stack) $ linearize' 0 [] ski'
 
@@ -59,5 +60,5 @@ linearize' base stack next = (stack', base', entry)
             (lstack, lbase, lentry) = linearize' tbase tstack l'
             (rstack, rbase, rentry) = linearize' lbase lstack r'
 
-compile :: String -> Memory
-compile = fromStack . linearize . parse
+compile :: String -> [SKI]
+compile = linearize . parse
