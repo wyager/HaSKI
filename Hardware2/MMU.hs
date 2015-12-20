@@ -1,10 +1,13 @@
-module Hardware2.MMU () where
+module Hardware2.MMU (
+    Pending, RAMStatus(..), RAMAction(..),
+    initiate, next, service, check
+) where
 
 import CLaSH.Prelude
 
 import Hardware2.Model (SKI,Ptr)
 
-import Hardware2.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..)) 
+import Hardware2.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..))
 
 data Pending = Pending Reading Reading Writing Writing
 
@@ -14,7 +17,9 @@ data Writing = NotWriting | Writing Ptr SKI | Written
 
 data RAMStatus = NoUpdate | ReadComplete SKI | WriteComplete
 
-data RAMAction = R Ptr | W Ptr SKI | X
+data RAMAction = R Ptr     -- Read
+               | W Ptr SKI -- Write
+               | X         -- Nothing
 
 -- Take a fresh MemRequest and turn it into a pending memory operation.
 initiate :: MemRequest -> Pending
@@ -38,7 +43,7 @@ next pending = case pending of
     Pending _ _ _ (Writing p x) -> W p x
     Pending _ _ _ _             -> X
 
--- Given the current pending request, as well as the state of RAM 
+-- Given the current pending request, as well as the state of RAM
 -- (e.g. waiting for read to complete), generate the new pending state.
 service :: Pending -> RAMStatus -> Pending
 service pending NoUpdate = pending

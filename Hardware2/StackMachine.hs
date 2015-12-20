@@ -1,10 +1,10 @@
-module Hardware2.StackMachine (State(Initializing)) where
+module Hardware2.StackMachine (State(Initializing), step1, step2, outputOf) where
 
 import CLaSH.Prelude hiding (Read)
 
 import Hardware2.Model (Ptr(Ptr), SKI(S,K,I,T,L), Output)
 
-import Hardware2.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..)) 
+import Hardware2.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..))
 
 import Text.Printf (printf)
 
@@ -38,43 +38,43 @@ step1 :: State -> MemRequest
 step1 Terminal = MemRequest Zero Zero -- We are done. Nothing to request.
 step1 Initializing = MemRequest (One (Read (Ptr 0))) Zero -- Read the start of the program.
 step1 (State (Stack NoSKIs _ 0) _ current) = case current of
-    S -> error "S on empty stack"
-    K -> error "K on empty stack"
-    I -> error "I on empty stack"
+    S       -> error "S on empty stack"
+    K       -> error "K on empty stack"
+    I       -> error "I on empty stack"
     T ap bp -> MemRequest (Two (Read ap) (Read bp)) Zero
-    L o -> MemRequest Zero Zero
+    L o     -> MemRequest Zero                      Zero
 step1 (State (Stack (OneSKI x) _ 0) _ current) = case current of
-    S -> error "S on 1-elem stack"
-    K -> error "K on 1-elem stack"
-    I -> MemRequest Zero Zero
+    S       -> error "S on 1-elem stack"
+    K       -> error "K on 1-elem stack"
+    I       -> MemRequest Zero                      Zero
     T ap bp -> MemRequest (Two (Read ap) (Read bp)) Zero
-    L o -> MemRequest Zero Zero
+    L o     -> MemRequest Zero                      Zero
 step1 (State (Stack (TwoSKIs x y) _ 0) _ current) = case current of
-    S -> error "S on 2-elem stack"
-    K -> MemRequest Zero Zero
-    I -> MemRequest Zero Zero
+    S       -> error "S on 2-elem stack"
+    K       -> MemRequest Zero                      Zero
+    I       -> MemRequest Zero                      Zero
     T ap bp -> MemRequest (Two (Read ap) (Read bp)) Zero
-    L o -> MemRequest Zero Zero
+    L o     -> MemRequest Zero                      Zero
 step1 (State (Stack (ThreeSKIs x y z) base 0) heap current) = case current of
-    S -> MemRequest Zero (Two (Write y (tip heap)) (Write z (pred $ tip heap)))
-    K -> MemRequest Zero Zero
-    I -> MemRequest Zero Zero
+    S       -> MemRequest Zero                      (Two (Write y (tip heap)) (Write z (pred $ tip heap)))
+    K       -> MemRequest Zero                      Zero
+    I       -> MemRequest Zero                      Zero
     T ap bp -> MemRequest (Two (Read ap) (Read bp)) (One (Write z base))
-    L o -> MemRequest Zero Zero
+    L o     -> MemRequest Zero                      Zero
 step1 (State (Stack (ThreeSKIs x y z) base 1) heap current) = case current of
-    S -> MemRequest (One (Read stack_head)) (Two (Write y (tip heap)) (Write z (pred $ tip heap)))
-    K -> MemRequest (One (Read stack_head)) Zero
-    I -> MemRequest (One (Read stack_head)) Zero
+    S       -> MemRequest (One (Read stack_head))   (Two (Write y (tip heap)) (Write z (pred $ tip heap)))
+    K       -> MemRequest (One (Read stack_head))   Zero
+    I       -> MemRequest (One (Read stack_head))   Zero
     T ap bp -> MemRequest (Two (Read ap) (Read bp)) (One (Write z base))
-    L o -> MemRequest (One (Read stack_head)) Zero
+    L o     -> MemRequest (One (Read stack_head))   Zero
     where
     stack_head = pred base
 step1 (State (Stack (ThreeSKIs x y z) base n) heap current) = case current of
-    S -> MemRequest (One (Read stack_head)) (Two (Write y (tip heap)) (Write z (pred $ tip heap)))
-    K -> MemRequest (Two (Read stack_head) (Read $ pred stack_head)) Zero
-    I -> MemRequest (One (Read stack_head)) Zero
-    T ap bp -> MemRequest (Two (Read ap) (Read bp)) (One (Write z base))
-    L o -> MemRequest (One (Read stack_head)) Zero
+    S       -> MemRequest (One (Read stack_head))                          (Two (Write y (tip heap)) (Write z (pred $ tip heap)))
+    K       -> MemRequest (Two (Read stack_head) (Read $ pred stack_head)) Zero
+    I       -> MemRequest (One (Read stack_head))                          Zero
+    T ap bp -> MemRequest (Two (Read ap) (Read bp))                        (One (Write z base))
+    L o     -> MemRequest (One (Read stack_head))                          Zero
     where
     stack_head = pred base
 
@@ -94,28 +94,28 @@ default_heap = Heap (Ptr (2^21))
 step2 :: State -> MemResponse -> State
 step2 Terminal _ = Terminal
 step2 Initializing (MemResponse (One ski)) = State default_stack default_heap ski
-step2 (State (Stack NoSKIs base 0) heap current) (MemResponse response) 
+step2 (State (Stack NoSKIs base 0) heap current) (MemResponse response)
     = case (current, response) of
     (S,_)            -> error "S on empty stack (step 2)"
     (K,_)            -> error "K on empty stack (step 2)"
     (I,_)            -> error "I on empty stack (step 2)"
     (T _ _, Two a b) -> State (Stack (OneSKI b) base 0) heap a
     (L _, _)         -> Terminal
-step2 (State (Stack (OneSKI x) base 0) heap current) (MemResponse response) 
+step2 (State (Stack (OneSKI x) base 0) heap current) (MemResponse response)
     = case (current, response) of
     (S,_)            -> error "S on 1-elem stack (step 2)"
     (K,_)            -> error "K on 1-elem stack (step 2)"
     (I,_)            -> State (Stack NoSKIs base 0)        heap x
     (T _ _, Two a b) -> State (Stack (TwoSKIs b x) base 0) heap a
     (L _,_)          -> State (Stack NoSKIs base 0)        heap x
-step2 (State (Stack (TwoSKIs x y) base 0) heap current) (MemResponse response) 
+step2 (State (Stack (TwoSKIs x y) base 0) heap current) (MemResponse response)
     = case (current, response) of
     (S,_)            -> error "S on 2-elem stack (step 2)"
     (K,_)            -> State (Stack (NoSKIs)          base 0)  heap x
     (I,_)            -> State (Stack (OneSKI y)        base 0)  heap x
     (T _ _, Two a b) -> State (Stack (ThreeSKIs b x y) base 0)  heap a
     (L o,_)          -> State (Stack (OneSKI y)        base 0)  heap x
-step2 (State (Stack (ThreeSKIs x y z) base 0) heap current) (MemResponse response) 
+step2 (State (Stack (ThreeSKIs x y z) base 0) heap current) (MemResponse response)
     = case (current, response) of
     (S,_)            -> State (Stack (TwoSKIs z (T y' z')) base 0) heap' x
     (K,_)            -> State (Stack (OneSKI z)            base 0) heap  x
@@ -127,7 +127,7 @@ step2 (State (Stack (ThreeSKIs x y z) base 0) heap current) (MemResponse respons
     z' = pred y'
     heap' = Heap (pred z')
     pushBase = succ base
-step2 (State (Stack (ThreeSKIs x y z) base 1) heap current) (MemResponse response) 
+step2 (State (Stack (ThreeSKIs x y z) base 1) heap current) (MemResponse response)
     = case (current, response) of
     (S,One h)        -> State (Stack (ThreeSKIs z (T y' z') h) popBase 0) heap' x
     (K,One h)        -> State (Stack (TwoSKIs z h)             popBase 0) heap  x
@@ -140,7 +140,7 @@ step2 (State (Stack (ThreeSKIs x y z) base 1) heap current) (MemResponse respons
     heap' = Heap (pred z')
     popBase = pred base
     pushBase = succ base
-step2 (State (Stack (ThreeSKIs x y z) base n) heap current) (MemResponse response) 
+step2 (State (Stack (ThreeSKIs x y z) base n) heap current) (MemResponse response)
     = case (current, response) of
     (S,One h)        -> State (Stack (ThreeSKIs z (T y' z') h) popBase dec) heap' x
     (K,Two h i)      -> State (Stack (ThreeSKIs z h i)   popPopBase decDec) heap  x
@@ -157,3 +157,7 @@ step2 (State (Stack (ThreeSKIs x y z) base n) heap current) (MemResponse respons
     inc = succ n
     dec = pred n
     decDec = pred dec
+
+outputOf :: State -> Maybe Output
+outputOf (State _ _ (L o)) = Just o
+outputOf _                 = Nothing
