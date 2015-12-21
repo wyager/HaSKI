@@ -1,6 +1,6 @@
-module Hardware2.Memory (memulate, fromStack, Memory, RAMStatus'(..), RAMAction'(..)) where
+module Hardware2.Memory (memulate, fromStack, Memory, RAMState, RAMStatus'(..), RAMAction'(..)) where
 
-import CLaSH.Prelude (Unsigned, Index, Signal, register)
+import CLaSH.Prelude (Unsigned, Index, Signal, register, bundle)
 
 import Prelude hiding (read)
 
@@ -16,18 +16,19 @@ type U30 = Unsigned 30
 
 data Memory = Memory (Map U30 W)
 
-data State = Idle | Reading Ptr (Index 5) | Writing Ptr W (Index 10)
+data State = Idle | Reading Ptr (Index 1) | Writing Ptr W (Index 1) deriving Show
 
-data RAMState = RS State Memory
+data RAMState = RS State Memory deriving Show
 
 data RAMStatus' = NoUpdate' | ReadComplete' W | WriteComplete'
 
 data RAMAction' = R' Ptr     -- Read
                 | W' Ptr W -- Write
                 | X'         -- Nothing
+                deriving Show
 
-memulate :: Memory -> Signal RAMAction' -> Signal RAMStatus'
-memulate initial actions = outputOf <$> mem'
+memulate :: Memory -> Signal RAMAction' -> Signal (RAMStatus', RAMState)
+memulate initial actions = bundle (outputOf <$> mem, mem)
     where
     mem = register (RS Idle initial) mem'
     mem' = step <$> mem <*> actions
@@ -41,6 +42,7 @@ step (RS (Reading ptr 0)   mem)   X' = RS Idle mem
 step (RS (Writing ptr w 0) mem)   X' = RS Idle (set mem ptr w)
 step (RS (Reading ptr n)   mem)   X' = RS (Reading ptr (n-1))   mem
 step (RS (Writing ptr w n) mem)   X' = RS (Writing ptr w (n-1)) mem
+step state action = error $ printf "Unexpected memory state/action.\nState: %s\nAction: %s" (show state) (show action)
 
 outputOf :: RAMState -> RAMStatus'
 outputOf (RS (Reading ptr 0)   mem) = ReadComplete' (read mem ptr)

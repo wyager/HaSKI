@@ -7,8 +7,17 @@ module Hardware2.Model (
 
 import CLaSH.Prelude
 
+import Text.Printf (printf)
+
 -- Machine word
-data W = W (BitVector 64) deriving (Show)
+data W = W (BitVector 64)
+
+instance Show W where
+    show (W v) = printf "[W 0x%02x 0x%08x 0x%08x]" tag a b
+        where
+        tag = toInteger $ slice d63 d60 v
+        a   = toInteger $ slice d59 d30 v
+        b   = toInteger $ slice d29 d0  v
 
 -- 30-bit pointers to 64-bit words
 -- Why? We want to fit two pointers plus 3 tag bits in a word.
@@ -31,7 +40,7 @@ binarize ski = W $ case ski of
     K     -> tag 1 ++# 0
     I     -> tag 2 ++# 0
     T a b -> tag 3 ++# binarizePtr a ++# binarizePtr b
-    L o   -> tag 4 ++# binarizeOutput o ++# 0
+    L o   -> tag 4 ++# 0 ++# binarizeOutput o
     where
     -- Just makes it clear that the tag should be 4 bits long.
     tag :: BitVector 4 -> BitVector 4
@@ -54,7 +63,7 @@ unbinarize (W w) = case tag of
     tag = slice d63 d60 w
     a = unbinarizePtr $ slice d59 d30 w
     b = unbinarizePtr $ slice d29 d0 w
-    o = unbinarizeOutput $ slice d59 d28 w
+    o = unbinarizeOutput $ slice d31 d0 w
 
 unbinarizePtr :: BitVector 30 -> Ptr
 unbinarizePtr w = Ptr (unpack w)

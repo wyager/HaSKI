@@ -20,6 +20,7 @@ data RAMStatus = NoUpdate | ReadComplete SKI | WriteComplete
 data RAMAction = R Ptr     -- Read
                | W Ptr SKI -- Write
                | X         -- Nothing
+               deriving Show
 
 -- Take a fresh MemRequest and turn it into a pending memory operation.
 initiate :: MemRequest -> Pending

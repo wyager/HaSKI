@@ -4,7 +4,7 @@ import CLaSH.Prelude hiding (read)
 
 import Hardware2.Model (Ptr(..), W, Output, binarize, unbinarize)
 
-import Hardware2.Memory (Memory, RAMStatus'(..), RAMAction'(..), memulate)
+import Hardware2.Memory (RAMState, Memory, RAMStatus'(..), RAMAction'(..), memulate)
 
 import Hardware2.MMU (RAMStatus(..), RAMAction(..))
 
@@ -25,8 +25,8 @@ unserialize (ReadComplete' w) = ReadComplete (unbinarize w)
 unserialize WriteComplete'    = WriteComplete
 
 
-evaluate :: Memory -> Signal (Maybe Output)
-evaluate program = outputs
+evaluate :: Memory -> Signal (Maybe Output, RAMState, RAMAction)
+evaluate program = bundle (outputs, mem, actions)
     where
-    (actions, outputs) = unbundle $ cpu mem_reads
-    mem_reads = unserialize <$> memulate program (serialize <$> actions)
+    (actions, outputs) = unbundle $ cpu (unserialize <$> mem_reads)
+    (mem_reads, mem)   = unbundle $ memulate program (serialize <$> actions)
