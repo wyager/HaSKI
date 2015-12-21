@@ -1,6 +1,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Hardware2.Model (Ptr(Ptr), SKI(S,K,I,T,L), Output(Output)) where
+module Hardware2.Model (
+    Ptr(Ptr), SKI(S,K,I,T,L), Output(Output), W,
+    binarize, unbinarize
+) where
 
 import CLaSH.Prelude
 
@@ -10,7 +13,7 @@ data W = W (BitVector 64) deriving (Show)
 -- 30-bit pointers to 64-bit words
 -- Why? We want to fit two pointers plus 3 tag bits in a word.
 -- This way, a whole SKI fits in a word.
-newtype Ptr = Ptr (Unsigned 30) deriving (Show, Enum)
+newtype Ptr = Ptr (Unsigned 30) deriving (Show, Enum, Num)
 
 -- SKI combinators.
 -- We also have T (which represents the conjuction of two SKIs).

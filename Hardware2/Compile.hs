@@ -1,8 +1,10 @@
-module Hardware2.Compile (compile) where
+module Hardware2.Compile (compile, format) where
 
 import Prelude
 
-import Hardware2.Model (SKI(S,K,I,T,L), Ptr(Ptr), Output(Output))
+import Hardware2.Model (SKI(S,K,I,T,L), Ptr(Ptr), Output(Output), binarize)
+
+import Hardware2.Memory (Memory, fromStack)
 
 -- Representation without explicit pointers
 data SKI' = S' | K' | I' | T' SKI' SKI' | L' Output deriving Show
@@ -46,7 +48,7 @@ parse = fst . kParse
 linearize :: SKI' -> [SKI]
 linearize ski' = (\(stack,base,entry) -> stack) $ linearize' 0 [] ski'
 
-linearize' :: Int -> [SKI] -> SKI' -> ([SKI], Int, Int)
+linearize' :: Ptr -> [SKI] -> SKI' -> ([SKI], Ptr, Ptr)
 linearize' base stack next = (stack', base', entry)
     where
     (stack', base', entry) = case next of
@@ -56,9 +58,12 @@ linearize' base stack next = (stack', base', entry)
         L' c -> ((L c):stack , base + 1, base)
         T' l' r' -> (rstack, rbase, tentry)
             where
-            (tstack, tbase, tentry) = (T (Ptr lentry) (Ptr rentry) : stack, base + 1, base)
+            (tstack, tbase, tentry) = (T lentry rentry : stack, base + 1, base)
             (lstack, lbase, lentry) = linearize' tbase tstack l'
             (rstack, rbase, rentry) = linearize' lbase lstack r'
 
 compile :: String -> [SKI]
-compile = linearize . parse
+compile = reverse . linearize . parse
+
+format :: String -> Memory
+format =  fromStack . map binarize . compile

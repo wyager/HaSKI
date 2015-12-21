@@ -1,66 +1,32 @@
-module Hardware.Harness (evaluate) where
+module Hardware2.Harness (evaluate) where
 
 import CLaSH.Prelude hiding (read)
 
-import Hardware.Model (Ptr(..), SKI(S,K,I,T,L))
+import Hardware2.Model (Ptr(..), W, Output, binarize, unbinarize)
 
-import Hardware.Memory (Memory, set, clear, read)
+import Hardware2.Memory (Memory, RAMStatus'(..), RAMAction'(..), memulate)
 
-import Hardware.StackMachine (Write(..), State, run)
+import Hardware2.MMU (RAMStatus(..), RAMAction(..))
+
+import Hardware2.CPU (cpu)
 
 import Text.Printf (printf)
 
---serviceRequest :: Memory -> MemRequest -> MemResponse
---serviceRequest mem req = case req of
---    LoadMain' (Ptr 0)             -> LoadMain (read mem (Ptr 0))
---    Deref2NoPush' a b             -> Deref2 (read mem a) (read mem b)
---    Deref2' a b _                 -> Deref2 (read mem a) (read mem b)
---    MemStackEmpty'                -> MemStackEmpty
---    MemStackHead' ptr             -> MemStackHead (read mem ptr)
---    MemStackTwo' a b              -> MemStackTwo (read mem a) (read mem b)
---    SPopMemStackEmpty' _ _        -> SPopMemStackEmpty
---    SPopMemStackNonEmpty' _ _ ptr -> SPopMemStackNonEmpty (read mem ptr)
+-- Convert from SKI terms to machine words before storing
+serialize :: RAMAction -> RAMAction'
+serialize (R p)   = R' p
+serialize (W p s) = W' p (binarize s)
+serialize X       = X'
 
---memUpdate :: Memory -> MemRequest -> Memory
---memUpdate mem req = case req of
---    Deref2' _ _ (Write x ptr)                         -> set mem ptr x
---    SPopMemStackEmpty' (Write a ap) (Write b bp)      -> set (set mem ap a) bp b
---    SPopMemStackNonEmpty' (Write a ap) (Write b bp) _ -> set (set mem ap a) bp b
---    _                                                 -> mem
+-- Convert from machine words to SKI terms after loading
+unserialize :: RAMStatus' -> RAMStatus
+unserialize NoUpdate'         = NoUpdate
+unserialize (ReadComplete' w) = ReadComplete (unbinarize w)
+unserialize WriteComplete'    = WriteComplete
 
 
-memulate :: Memory -> Signal RAMAction -> Signal RAMStatus
-memulate initial actions = output
-    where
-    mem = 
-
-    -- where
-    -- output = register undefined (read2 <$> reads <*> mem)
-    -- mem    = register initial (write2 <$> writes <*> mem)
-    -- read2 (a,b) mem = (read mem a, read mem b)
-    -- write2 (a,b) = write1 a . write1 b
-    -- write1 write mem = case write of
-    --     Nothing -> mem
-    --     Just (Write ski ptr) -> set mem ptr ski
-
-evaluate :: Memory -> Signal (Maybe Char)
+evaluate :: Memory -> Signal (Maybe Output)
 evaluate program = outputs
     where
     (actions, outputs) = unbundle $ cpu mem_reads
-    mem_reads = memulate program actions
-
---terminal :: State -> Bool
---terminal Terminal = True
---terminal _        = False
-
---takeUntil f [] = []
---takeUntil f (x:xs) = if f x then [x] else x : takeUntil f xs
-
---steps :: Memory -> [(State, Memory)]
---steps program = takeUntil (terminal . fst) $ iterate step $ (Initialized, program)
-
---evaluate :: Memory -> [Char]
---evaluate program = [char | (Just char) <- map (output . fst) $ steps program]
-
---memories :: Memory -> [Memory]
---memories = map snd . steps
+    mem_reads = unserialize <$> memulate program (serialize <$> actions)
