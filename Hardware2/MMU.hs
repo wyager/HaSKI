@@ -9,11 +9,11 @@ import Hardware2.Model (SKI,Ptr)
 
 import Hardware2.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..))
 
-data Pending = Pending Reading Reading Writing Writing
+data Pending = Pending Reading Reading Writing Writing deriving Show
 
-data Reading = NotReading | Reading Ptr | DidRead SKI
+data Reading = NotReading | Reading Ptr | DidRead SKI deriving Show
 
-data Writing = NotWriting | Writing Ptr SKI | Written
+data Writing = NotWriting | Writing Ptr SKI | Written deriving Show
 
 data RAMStatus = NoUpdate | ReadComplete SKI | WriteComplete
 

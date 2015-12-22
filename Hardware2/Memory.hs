@@ -30,8 +30,9 @@ data RAMAction' = R' Ptr     -- Read
 memulate :: Memory -> Signal RAMAction' -> Signal (RAMStatus', RAMState)
 memulate initial actions = bundle (outputOf <$> mem, mem)
     where
+    actions' = register X' actions
     mem = register (RS Idle initial) mem'
-    mem' = step <$> mem <*> actions
+    mem' = step <$> mem <*> actions'
 
 step :: RAMState -> RAMAction' -> RAMState
 step (RS Idle mem) action = case action of

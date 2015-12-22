@@ -8,7 +8,7 @@ import Hardware2.Memory (RAMState, Memory, RAMStatus'(..), RAMAction'(..), memul
 
 import Hardware2.MMU (RAMStatus(..), RAMAction(..))
 
-import Hardware2.CPU (cpu)
+import Hardware2.CPU (CPUState, cpu)
 
 import Text.Printf (printf)
 
@@ -25,8 +25,8 @@ unserialize (ReadComplete' w) = ReadComplete (unbinarize w)
 unserialize WriteComplete'    = WriteComplete
 
 
-evaluate :: Memory -> Signal (Maybe Output, RAMState, RAMAction)
-evaluate program = bundle (outputs, mem, actions)
+evaluate :: Memory -> Signal (Maybe Output, CPUState)
+evaluate program = bundle (outputs, states)
     where
-    (actions, outputs) = unbundle $ cpu (unserialize <$> mem_reads)
-    (mem_reads, mem)   = unbundle $ memulate program (serialize <$> actions)
+    (actions, outputs, states) = unbundle $ cpu (unserialize <$> mem_reads)
+    (mem_reads, mem)  = unbundle $ memulate program (serialize <$> actions)

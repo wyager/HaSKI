@@ -10,4 +10,4 @@ main = do
     let ski = compile prog
     let mem = format prog
     mapM print $ ski
-    mapM print $ sampleN 10 $ evaluate mem
+    mapM print $ sampleN 200 $ evaluate mem

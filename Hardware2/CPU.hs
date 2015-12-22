@@ -1,4 +1,4 @@
-module Hardware2.CPU (cpu) where
+module Hardware2.CPU (CPUState, cpu) where
 
 import CLaSH.Prelude
 
@@ -10,7 +10,7 @@ import Hardware2.MMU (Pending, RAMStatus(NoUpdate), RAMAction(X),
 import Hardware2.Model (Output(..))
 
 -- We need to keep track of the evaluator state as well as the MMU state.
-data CPUState = Startup | CPU State Pending
+data CPUState = Startup | CPU State Pending deriving Show
 
 -- The state of the MMU when the CPU is initialized.
 -- If you look at the definition of step1, this corresponds
@@ -20,6 +20,8 @@ bootup :: Pending
 bootup = initiate (step1 Initializing)
 
 -- The transition function of the CPU.
+-- Problem: I is blocking because there is no memory update involved.
+-- I need to rewrite this section so as to not be based on RAM updates.
 step :: CPUState -> RAMStatus -> (CPUState, RAMAction, Maybe Output)
 step Startup             NoUpdate = (CPU Initializing pending, next pending, Nothing)
     where
@@ -40,8 +42,8 @@ step (CPU state pending) update   = (CPU state' pending'', action, output)
         Nothing -> Nothing -- We only output if we're in a brand new state
         Just _  -> outputOf state' -- New state, new output.
 
-cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output)
-cpu ramstatus = bundle (action, output)
+cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output, CPUState)
+cpu ramstatus = bundle (action, output, state)
     where
     state  :: Signal CPUState
     state = register Startup state'
