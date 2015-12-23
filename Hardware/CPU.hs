@@ -1,13 +1,13 @@
-module Hardware2.CPU (CPUState, cpu) where
+module Hardware.CPU (CPUState, cpu) where
 
 import CLaSH.Prelude
 
-import Hardware2.StackMachine (State(Initializing), step1, step2, outputOf)
+import Hardware.StackMachine (State(Initializing), step1, step2, outputOf)
 
-import Hardware2.MMU (Pending, RAMStatus(NoUpdate), RAMAction(X),
+import Hardware.MMU (Pending, RAMStatus(NoUpdate), RAMAction(X),
     initiate, next, service, check)
 
-import Hardware2.Model (Output(..))
+import Hardware.Model (Output(..))
 
 -- Are we waiting for a single memory action (read/write/etc.) to complete?
 data Waiting = No | Yes deriving Show

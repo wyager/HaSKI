@@ -4,6 +4,9 @@ import Model.Model (SKI)
 import Model.Parser (parse)
 import Model.StackMachine (evaluate)
 
+hello4 :: SKI
+hello4 = parse "SII(SII(hello_world!\n))"
+
 ababs :: SKI
 ababs = parse "SII(S(K(ab))(SII))"
 

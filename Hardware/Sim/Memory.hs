@@ -1,10 +1,10 @@
-module Hardware2.Memory (memulate, fromStack, Memory, RAMState, RAMStatus'(..), RAMAction'(..)) where
+module Hardware.Sim.Memory (memulate, fromStack, Memory, RAMState, RAMStatus'(..), RAMAction'(..)) where
 
 import CLaSH.Prelude (Unsigned, Index, Signal, register, bundle)
 
 import Prelude hiding (read)
 
-import Hardware2.Model (Ptr(..), W)
+import Hardware.Model (Ptr(..), W)
 
 import Data.Map.Strict (Map, fromList, insert, delete, (!), toList, member)
 

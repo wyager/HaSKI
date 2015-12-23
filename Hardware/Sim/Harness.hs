@@ -1,14 +1,14 @@
-module Hardware2.Harness (evaluate) where
+module Hardware.Sim.Harness (evaluate) where
 
 import CLaSH.Prelude hiding (read)
 
-import Hardware2.Model (Ptr(..), W, Output, binarize, unbinarize)
+import Hardware.Model (Ptr(..), W, Output, binarize, unbinarize)
 
-import Hardware2.Memory (RAMState, Memory, RAMStatus'(..), RAMAction'(..), memulate)
+import Hardware.Sim.Memory (RAMState, Memory, RAMStatus'(..), RAMAction'(..), memulate)
 
-import Hardware2.MMU (RAMStatus(..), RAMAction(..))
+import Hardware.MMU (RAMStatus(..), RAMAction(..))
 
-import Hardware2.CPU (CPUState, cpu)
+import Hardware.CPU (CPUState, cpu)
 
 import Text.Printf (printf)
 

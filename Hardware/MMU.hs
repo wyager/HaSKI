@@ -1,13 +1,13 @@
-module Hardware2.MMU (
+module Hardware.MMU (
     Pending, RAMStatus(..), RAMAction(..),
     initiate, next, service, check
 ) where
 
 import CLaSH.Prelude
 
-import Hardware2.Model (SKI,Ptr)
+import Hardware.Model (SKI,Ptr)
 
-import Hardware2.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..))
+import Hardware.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..))
 
 data Pending = Pending Reading Reading Writing Writing deriving Show
 

@@ -1,8 +1,8 @@
-module Hardware2.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..)) where
+module Hardware.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..)) where
 
 import CLaSH.Prelude hiding (Read)
 
-import Hardware2.Model (SKI, Ptr)
+import Hardware.Model (SKI, Ptr)
 
 -- We will never need more than two reads or two writes at once.
 data MemRequest = MemRequest (Some Read) (Some Write) deriving (Show)
@@ -18,5 +18,3 @@ data Write = Write SKI Ptr deriving (Show)
 
 -- A memory read
 data Read = Read Ptr deriving (Show)
-
-

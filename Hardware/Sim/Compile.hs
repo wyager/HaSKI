@@ -1,10 +1,10 @@
-module Hardware2.Compile (compile, format) where
+module Hardware.Sim.Compile (compile, format) where
 
 import Prelude
 
-import Hardware2.Model (SKI(S,K,I,T,L), Ptr(Ptr), Output(Output), binarize)
+import Hardware.Model (SKI(S,K,I,T,L), Ptr(Ptr), Output(Output), binarize)
 
-import Hardware2.Memory (Memory, fromStack)
+import Hardware.Sim.Memory (Memory, fromStack)
 
 -- Representation without explicit pointers
 data SKI' = S' | K' | I' | T' SKI' SKI' | L' Output deriving Show
