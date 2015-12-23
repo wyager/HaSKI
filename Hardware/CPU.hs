@@ -23,9 +23,6 @@ bootup :: Pending
 bootup = initiate (step1 Initializing)
 
 -- The transition function of the CPU.
--- Problem: I is blocking because there is no memory update involved.
--- I need to rewrite this section so as to not be based on RAM updates.
--- Problem 2: We don't want to dispatch the same request twice.
 step :: CPUState -> RAMStatus -> (CPUState, RAMAction, Maybe Output)
 step (CPU state pending Yes) NoUpdate = (CPU state pending Yes, X, Nothing)
 step (CPU state pending _  ) update   = (CPU state' pending'' waiting', action, output)
@@ -45,8 +42,6 @@ step (CPU state pending _  ) update   = (CPU state' pending'' waiting', action, 
     waiting' = case action of
         X -> No
         _ -> Yes
-
--- If mem response is done, then we want to continue.
 
 cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output)
 cpu ramstatus = bundle (action, output)
