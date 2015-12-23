@@ -25,8 +25,8 @@ unserialize (ReadComplete' w) = ReadComplete (unbinarize w)
 unserialize WriteComplete'    = WriteComplete
 
 
-evaluate :: Memory -> Signal (Maybe Output, CPUState)
-evaluate program = bundle (outputs, states)
+evaluate :: Memory -> Signal (Maybe Output)
+evaluate program = bundle (outputs)
     where
-    (actions, outputs, states) = unbundle $ cpu (unserialize <$> mem_reads)
+    (actions, outputs) = unbundle $ cpu (unserialize <$> mem_reads)
     (mem_reads, mem)  = unbundle $ memulate program (serialize <$> actions)
