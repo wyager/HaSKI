@@ -2,7 +2,7 @@ module Hardware.Sim.Compile (compile, format) where
 
 import Prelude
 
-import Hardware.Model (SKI(S,K,I,T,L), Ptr(Ptr), Output(Output), binarize)
+import Hardware.Model (SKI(S,K,I,T,L), Ptr(Ptr), Output(Output), W(W), binarize)
 
 import Hardware.Sim.Memory (Memory, fromStack)
 
@@ -66,4 +66,4 @@ compile :: String -> [SKI]
 compile = reverse . linearize . parse
 
 format :: String -> Memory
-format =  fromStack . map binarize . compile
+format =  fromStack . map (W . binarize) . compile

@@ -11,7 +11,7 @@ main = do
     let ski = compile prog
     let mem = format prog
     mapM print $ ski
-    putStrLn $ map toChar $ catMaybes $ sampleN 2000 $ evaluate mem
+    putStrLn $ map toChar $ catMaybes $ sampleN 20000 $ evaluate mem
 
 hello4 = "SII(SII(hello_world!\n))"
 

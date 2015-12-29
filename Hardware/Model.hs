@@ -1,8 +1,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Hardware.Model (
-    Ptr(Ptr), SKI(S,K,I,T,L), Output(Output), W,
-    binarize, unbinarize
+    Ptr(Ptr), SKI(S,K,I,T,L), Output(Output), W(W),
+    binarize, unbinarize, binarizePtr
 ) where
 
 import CLaSH.Prelude
@@ -34,8 +34,8 @@ data SKI = S | K | I | T Ptr Ptr | L Output deriving (Show)
 -- 32-bit output values
 data Output = Output (Unsigned 32) deriving (Show)
 
-binarize :: SKI -> W
-binarize ski = W $ case ski of
+binarize :: SKI -> BitVector 64
+binarize ski = case ski of
     S     -> tag 0 ++# 0
     K     -> tag 1 ++# 0
     I     -> tag 2 ++# 0
@@ -52,8 +52,8 @@ binarizePtr (Ptr ptr) = pack ptr
 binarizeOutput :: Output -> BitVector 32
 binarizeOutput (Output o) = pack o
 
-unbinarize :: W -> SKI
-unbinarize (W w) = case tag of
+unbinarize :: BitVector 64 -> SKI
+unbinarize w = case tag of
     0 -> S
     1 -> K
     2 -> I

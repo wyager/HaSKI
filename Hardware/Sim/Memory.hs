@@ -16,7 +16,7 @@ type U30 = Unsigned 30
 
 data Memory = Memory (Map U30 W)
 
-data State = Idle | Reading Ptr (Index 1) | Writing Ptr W (Index 1) deriving Show
+data State = Idle | Reading Ptr (Index 10) | Writing Ptr W (Index 10) deriving Show
 
 data RAMState = RS State Memory deriving Show
 
