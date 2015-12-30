@@ -1,4 +1,4 @@
-import Hardware.Sim.Compile (format, compile)
+import Hardware.Sim.Compile (format, encode, compile)
 import Hardware.Sim.Harness (evaluate)
 import Hardware.Model (Output(..))
 import CLaSH.Prelude (sampleN)
@@ -9,7 +9,7 @@ import Prelude
 main = do
     let prog = hello4
     let ski = compile prog
-    let mem = format prog
+    let mem = format $ encode ski
     mapM print $ ski
     putStrLn $ map toChar $ catMaybes $ sampleN 20000 $ evaluate mem
 

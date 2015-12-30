@@ -79,10 +79,10 @@ step1 (State (Stack (ThreeSKIs x y z) base n) heap current) = case current of
     stack_head = pred base
 
 default_stack :: Stack
-default_stack = Stack NoSKIs (Ptr 0x100000) 0
+default_stack = Stack NoSKIs (Ptr 0x1000) 0
 
 default_heap :: Heap
-default_heap = Heap (Ptr 0x200000)
+default_heap = Heap (Ptr 0x2000)
 
 
 -- Step 2: Take the memory response and generate the next state.

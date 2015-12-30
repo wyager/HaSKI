@@ -1,4 +1,6 @@
-module Hardware.Sim.Compile (compile, format) where
+module Hardware.Sim.Compile (compile, format, encode) where
+
+import CLaSH.Prelude (BitVector)
 
 import Prelude
 
@@ -65,5 +67,8 @@ linearize' base stack next = (stack', base', entry)
 compile :: String -> [SKI]
 compile = reverse . linearize . parse
 
-format :: String -> Memory
-format =  fromStack . map (W . binarize) . compile
+encode :: [SKI] -> [BitVector 64]
+encode = map binarize
+
+format :: [BitVector 64] -> Memory
+format = fromStack . map W
