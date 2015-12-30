@@ -2,8 +2,8 @@
 
 module mem(input clk,
     // read ports
-    input [29:0]addr, output [63:0]rData,
-    input wEnable, input [63:0]wData);
+    input [29:0]addr, input readOrWrite, input start, input [63:0]wData,
+    output [63:0]rData, output complete);
 
     reg [63:0]mem[16383:0];
 
@@ -13,12 +13,13 @@ module mem(input clk,
     end
 
     /* memory address register */
-    reg [15:0]in0 = 16'hxxxx;
-    reg [15:0]in1 = 16'hxxxx;
+    reg [29:0]addr = x;
 
-    /* memory data register */
-    reg [15:0]out0 = 16'hxxxx;
-    reg [15:0]out1 = 16'hxxxx;
+    /* memory read register */
+    reg [63:0]out0 = x;
+
+
+
 
     assign rdata0 = out0;
     assign rdata1 = out1;
