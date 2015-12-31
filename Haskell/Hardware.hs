@@ -2,7 +2,7 @@ module Hardware (topEntity) where
 
 import CLaSH.Prelude
 import Control.Arrow ((***))
-import Hardware.CPU (cpu)
+import Hardware.CPU (cpu, Halt(DoHalt, Don'tHalt))
 import Hardware.MMU (
     RAMStatus(NoUpdate, ReadComplete, WriteComplete),
     RAMAction(W,R,X) )
@@ -18,6 +18,7 @@ import Hardware.MemoryEmulator.Default (defaultContents)
 type RAMStatusBits = (Bit, Bit, BitVector 64) -- Enable, read/write, data
 type RAMActionBits = (Bit, Bit, BitVector 30, BitVector 64) -- Enable, read/write, ptr, data
 type OutputBits    = (Bit, Unsigned 32) -- Enable, data
+type HaltBit       = Bit
 
 ramstatus :: RAMStatusBits -> RAMStatus
 ramstatus (0,_,_) = NoUpdate
@@ -33,10 +34,16 @@ output :: Maybe Output -> OutputBits
 output Nothing           = (0, 0)
 output (Just (Output o)) = (1, o)
 
+halt :: Halt -> HaltBit
+halt DoHalt    = 1
+halt Don'tHalt = 0
 
--- NB: cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output)
-cpuHardware :: Signal RAMStatusBits -> Signal (RAMActionBits, OutputBits)
-cpuHardware = fmap (ramaction *** output) . cpu . fmap ramstatus
+
+-- NB: cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output, Halt)
+cpuHardware :: Signal RAMStatusBits
+            -> Signal (RAMActionBits, OutputBits, HaltBit)
+cpuHardware = fmap convert . cpu . fmap ramstatus
+    where convert (ram,out,done) = (ramaction ram, output out, halt done)
 
 -- NB: You wouldn't use this in a real design. You would use some sort
 -- of external RAM device. However, doing this varies widely across FPGA
@@ -50,8 +57,8 @@ ramHardware :: Signal RAMActionBits -> Signal RAMStatusBits
 ramHardware = ram defaultContents
 
 -- The thing that gets synthesized to an HDL
-topEntity :: Signal OutputBits
-topEntity = output
+topEntity :: Signal (OutputBits, HaltBit)
+topEntity = bundle (output, halt)
     where
-    (ramRequest, output) = unbundle $ cpuHardware ramResponse
+    (ramRequest, output, halt) = unbundle $ cpuHardware ramResponse
     ramResponse = ramHardware ramRequest

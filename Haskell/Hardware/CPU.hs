@@ -1,13 +1,17 @@
-module Hardware.CPU (CPUState, cpu) where
+module Hardware.CPU (CPUState, Halt(..), cpu) where
 
 import CLaSH.Prelude
 
-import Hardware.StackMachine (State(Initializing), step1, step2, outputOf)
+import Hardware.StackMachine (State(Initializing),
+    step1, step2, outputOf, terminal)
 
 import Hardware.MMU (Pending, RAMStatus(NoUpdate), RAMAction(X),
     initiate, next, service, check)
 
 import Hardware.Model (Output(..))
+
+-- Halt?
+data Halt = DoHalt | Don'tHalt deriving Show
 
 -- Are we waiting for a single memory action (read/write/etc.) to complete?
 data Waiting = No | Yes deriving Show
@@ -43,8 +47,11 @@ step (CPU state pending _  ) update   = (CPU state' pending'' waiting', action, 
         X -> No
         _ -> Yes
 
-cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output)
-cpu ramstatus = bundle (action, output)
+checkIfDone :: CPUState -> Halt
+checkIfDone (CPU state _ _) = if terminal state then DoHalt else Don'tHalt
+
+cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output, Halt)
+cpu ramstatus = bundle (action, output, halt)
     where
     state  :: Signal CPUState
     state = register (CPU Initializing bootup No) state'
@@ -52,3 +59,5 @@ cpu ramstatus = bundle (action, output)
     action :: Signal RAMAction
     output :: Signal (Maybe Output)
     (state', action, output) = unbundle $ step <$> state <*> ramstatus
+    halt   :: Signal Halt
+    halt = checkIfDone <$> state

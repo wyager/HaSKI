@@ -8,7 +8,7 @@ import CLaSH.Prelude
 -- FPGA families, we are "simulating" RAM in FPGA hardware.
 -- This is horrendously inefficient, so we can't have very much "RAM".
 -- See Hardware.hs for more details.
-defaultContents :: Vec 0x4000 (BitVector 64)
+defaultContents :: Vec 0x200 (BitVector 64)
 defaultContents = program ++ repeat 0
 
 -- Generated using Compile.hs

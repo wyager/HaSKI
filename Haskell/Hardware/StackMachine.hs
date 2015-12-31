@@ -1,4 +1,7 @@
-module Hardware.StackMachine (State(Initializing), step1, step2, outputOf) where
+module Hardware.StackMachine (
+    State(Initializing),
+    step1, step2, outputOf, terminal
+) where
 
 import CLaSH.Prelude hiding (Read)
 
@@ -79,10 +82,10 @@ step1 (State (Stack (ThreeSKIs x y z) base n) heap current) = case current of
     stack_head = pred base
 
 default_stack :: Stack
-default_stack = Stack NoSKIs (Ptr 0x1000) 0
+default_stack = Stack NoSKIs (Ptr 0x100) 0
 
 default_heap :: Heap
-default_heap = Heap (Ptr 0x2000)
+default_heap = Heap (Ptr 0x1FF)
 
 
 -- Step 2: Take the memory response and generate the next state.
@@ -161,3 +164,7 @@ step2 (State (Stack (ThreeSKIs x y z) base n) heap current) (MemResponse respons
 outputOf :: State -> Maybe Output
 outputOf (State _ _ (L o)) = Just o
 outputOf _                 = Nothing
+
+terminal :: State -> Bool
+terminal Terminal = True
+terminal _        = False
