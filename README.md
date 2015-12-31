@@ -21,7 +21,7 @@ so that the evaluator can print things.
 ## Directory:
 
 * `Haskell/` contains Haskell/Cλash code.
-  * `Compile.hs` compiles SKI programs to binary code (as `.hex` files).
+  * `Compile.hs` compiles SKI programs to HaSKI binary machine code (as `.hex` files).
   * `Hardware.hs` contains `topEntity`, which is the final generated circuit.
   * `Main.hs` contains some utilities for simulating the CPU. Mostly used for debugging.
   * `Model/` contains a pure Haskell "demo" evaluator. It's very simple.
