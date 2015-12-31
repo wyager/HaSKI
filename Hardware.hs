@@ -42,6 +42,7 @@ cpuHardware = fmap (ramaction *** output) . cpu . fmap ramstatus
 -- of external RAM device. However, doing this varies widely across FPGA
 -- families, so I "cheated" and I am implementing RAM using a big register.
 -- That way, this design should hopefully be more "plug-and-play".
+-- However, this is very inefficient, so we can't have much RAM.
 -- If you'd like, you can replace this with actual RAM hardware for your FPGA.
 -- This project uses 30-bit pointers to 64-bit words, so you could potentially
 -- use up to 8GiB without much trouble.
