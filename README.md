@@ -69,7 +69,7 @@ which means the code gets a lot more complicated.
 
 ### Simulation
 
-Using the code in `Hardware/Sim/`, we can simulate the hardware by compiling
+Using the code in `Haskell/Hardware/Sim/`, we can simulate the hardware by compiling
 it to a binary. That's one of the great things about Cλash; it's all just
 Haskell (plus some extensions), so we can compile it to a program just
 like normal Haskell code.
