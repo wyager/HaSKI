@@ -42,7 +42,7 @@ so that the evaluator can print things.
       * `Compile.hs` contains code for compiling SKI programs (as strings) into various forms (including HaSKI machine code).
       * `Harness.hs` contains code for running the evaluator on programs.
       * `Memory.hs` contains code for simulating a memory device.
-
+* `HDL/` contains low-level hardware simulation code.
 
 ## The model evaluator
 
@@ -89,7 +89,50 @@ Looking at the contents of `Main.hs`, you can see that it does the following:
 * Runs the evaluator with the memory containing the compiled "hello4"
 * Prints the character representation of all outputs
 
+You can also simulate the hardware directly, but this is a bit uglier
+because the outputs are raw bits. To do this,
+
+```
+clash --interactive Hardware.hs
+sampleN 1000 topEntity
+```
+
 ### Hardware
 
-This is in progress! Ideally, this would be pretty much done,
-but hardware is never as simple as you hope.
+To generate a circuit description, run
+
+```
+clash --verilog Hardware.hs
+```
+
+The circuit description will be placed in `verilog/Hardware`.
+`Hardware_topEntity.v` is the file containing the top-level circuit description.
+
+Cλash can also generate other HDLs, like SystemVerilog or VHDL.
+
+Note that, for purposes of making this project more "plug-and-play", I don't
+use a real RAM module. RAM usage is unfortunately very different across FPGA
+boards, so I have a fake RAM module implemented in FPGA hardware. This is quite
+inefficient, so the default RAM is pretty small. It shouldn't be too hard to
+implement real RAM hardware for your FPGA board, though. See
+`ramHardware` in `Haskell/Hardware.hs`.
+
+The default RAM contents are specified in
+`Haskell/Hardware/MemoryEmulator/Default.hs`.
+
+After generating Verilog code, you can use it to replace `Hardware_*.v`
+in `HDL/`. Then, you can  simulate it with `iverilog` by running
+
+```
+make cpu
+./cpu
+```
+
+This is a very low-level simulation and `iverilog` is not very fast,
+so this takes a while.
+
+This prints a `.` if there is no output that cycle, a character if there
+is output that cycle, and stops when the CPU halts (runs out of code to
+execute).
+
+The default program outputs `hello_world!` four times and then stops.

@@ -10,7 +10,7 @@ import Hardware.Sim.Memory (RAMState, Memory, RAMStatus'(..), RAMAction'(..), me
 
 import Hardware.MMU (RAMStatus(..), RAMAction(..))
 
-import Hardware.CPU (CPUState, cpu)
+import Hardware.CPU (CPUState, Halt, cpu)
 
 import Text.Printf (printf)
 
@@ -27,8 +27,8 @@ unserialize (ReadComplete' (Model.W w)) = ReadComplete (unbinarize w)
 unserialize WriteComplete'              = WriteComplete
 
 
-evaluate :: Memory -> Signal (Maybe Output)
-evaluate program = bundle (outputs)
+evaluate :: Memory -> Signal (Maybe Output, Halt)
+evaluate program = bundle (outputs, halt)
     where
-    (actions, outputs) = unbundle $ cpu (unserialize <$> mem_reads)
+    (actions, outputs, halt) = unbundle $ cpu (unserialize <$> mem_reads)
     (mem_reads, mem)  = unbundle $ memulate program (serialize <$> actions)
