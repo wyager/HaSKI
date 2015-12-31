@@ -1,6 +1,4 @@
-module Hardware.MemoryEmulator.RAM (
-    ram
-) where
+module Hardware.MemoryEmulator.RAM (ram) where
 
 import CLaSH.Prelude
 
