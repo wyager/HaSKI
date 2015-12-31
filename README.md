@@ -21,27 +21,27 @@ so that the evaluator can print things.
 ## Directory:
 
 * `Haskell/` contains Haskell/Cλash code.
-** `Compile.hs` compiles SKI programs to binary code (as `.hex` files).
-** `Hardware.hs` contains `topEntity`, which is the final generated circuit.
-** `Main.hs` contains some utilities for simulating the CPU. Mostly used for debugging.
-** `Model/` contains a pure Haskell "demo" evaluator. It's very simple.
-*** `Model.hs` contains SKI term definitions.
-*** `Parser.hs` contains a simple parser.
-*** `Programs.hs` contains example programs.
-*** `StackMachine.hs` contains the evaluator.
-** `Hardware/` contains the Cλash code that can actually target hardware.
-*** `CPU.hs` ties together memory and evaluator logic.
-*** `Defs.hs` contains some useful type definitions.
-*** `MMU.hs` contains memory logic.
-*** `Model.hs` contains type definitions for basic building blocks (SKI terms and pointers).
-*** `StackMachine.hs` contains the core evaluator logic.
-*** `MemoryEmulator/` contains some RAM simulation logic.
-**** `RAM.hs` contains a fake RAM device implemented in FPGA logic. This makes it easy to target arbitrary FPGA boards, at the expense of RAM size.
-**** `Default.hs` contains default pseudo-RAM contents for a few programs.
-*** `Sim/` contains evaluator simulation logic. This simulates at a higher level than the hardware simulation, so is easier for debugging.
-**** `Compile.hs` contains code for compiling SKI programs (as strings) into various forms (including HaSKI machine code).
-**** `Harness.hs` contains code for running the evaluator on programs.
-**** `Memory.hs` contains code for simulating a memory device.
+  * `Compile.hs` compiles SKI programs to binary code (as `.hex` files).
+  * `Hardware.hs` contains `topEntity`, which is the final generated circuit.
+  * `Main.hs` contains some utilities for simulating the CPU. Mostly used for debugging.
+  * `Model/` contains a pure Haskell "demo" evaluator. It's very simple.
+    * `Model.hs` contains SKI term definitions.
+    * `Parser.hs` contains a simple parser.
+    * `Programs.hs` contains example programs.
+    * `StackMachine.hs` contains the evaluator.
+  * `Hardware/` contains the Cλash code that can actually target hardware.
+    * `CPU.hs` ties together memory and evaluator logic.
+    * `Defs.hs` contains some useful type definitions.
+    * `MMU.hs` contains memory logic.
+    * `Model.hs` contains type definitions for basic building blocks (SKI terms and pointers).
+    * `StackMachine.hs` contains the core evaluator logic.
+    * `MemoryEmulator/` contains some RAM simulation logic.
+      * `RAM.hs` contains a fake RAM device implemented in FPGA logic. This makes it easy to target arbitrary FPGA boards, at the expense of RAM size.
+      * `Default.hs` contains default pseudo-RAM contents for a few programs.
+    * `Sim/` contains evaluator simulation logic. This simulates at a higher level than the hardware simulation, so is easier for debugging.
+      * `Compile.hs` contains code for compiling SKI programs (as strings) into various forms (including HaSKI machine code).
+      * `Harness.hs` contains code for running the evaluator on programs.
+      * `Memory.hs` contains code for simulating a memory device.
 
 
 ## The model evaluator
