@@ -15,7 +15,7 @@ main = do
 
 hello4 = "SII(SII(hello_world!\n))"
 
-ababs = "SII(S(K(ab))(SII))"
+ababs = "SII(S(K(ababababab))(SII))"
 
 double = "SIIa"
 
