@@ -5,9 +5,8 @@
 HaSKI is my attempt at building a reasonably simple hardware-based evaluator
 for the dead-simple, turing-complete [SKI combinator calculus](https://en.wikipedia.org/wiki/SKI_combinator_calculus).
 
-Because [I don't like most HDLs](http://yager.io/talks/CLaSH.pdf), I
-decided to do this project using a Haskell-to-hardware compiler called
-[Cλash](https://github.com/clash-lang/clash-compiler).
+I decided to do this project using a Haskell-to-hardware compiler called
+[Cλash](https://github.com/clash-lang/clash-compiler) because [I don't like most HDLs](http://yager.io/talks/CLaSH.pdf).
 
 The SKI calculus is defined by three terms (`S`, `K`, and `I`), but these terms
 don't have any side effects, so it's hard to make a pure SKI program
