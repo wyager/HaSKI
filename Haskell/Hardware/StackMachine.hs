@@ -30,7 +30,7 @@ data Heap = Heap {tip :: Ptr} deriving (Show)
 
 -- The current state of the evaluator.
 -- For a clearer explanation of how the evaluator works,
--- the (non-hardware-implementable) model evaluator.
+-- see the (non-hardware-implementable) model evaluator.
 data State = Initializing | State {stack :: Stack, heap :: Heap, current :: SKI} | Terminal deriving (Show)
 
 -- The first step: Generate memory requests.
