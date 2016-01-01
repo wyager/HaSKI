@@ -22,7 +22,7 @@ instance Show Stack where
 data SKIs = NoSKIs | OneSKI SKI | TwoSKIs SKI SKI | ThreeSKIs SKI SKI SKI deriving (Show)
 
 -- We're using a very wasteful non-freeing heap.
--- We could implement e.g. garbage collection or reference counting,
+-- We could implement e.g. garbage collection (?) or reference counting,
 -- but that's beyond this project.
 -- tip is where the next write will go.
 -- Heap grows down.
