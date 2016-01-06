@@ -1,7 +1,6 @@
 module Hardware (topEntity) where
 
 import CLaSH.Prelude
-import Control.Arrow ((***))
 import Hardware.CPU (cpu, Halt(DoHalt, Don'tHalt))
 import Hardware.MMU (
     RAMStatus(NoUpdate, ReadComplete, WriteComplete),
@@ -37,7 +36,6 @@ output (Just (Output o)) = (1, o)
 halt :: Halt -> HaltBit
 halt DoHalt    = 1
 halt Don'tHalt = 0
-
 
 -- NB: cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output, Halt)
 cpuHardware :: Signal RAMStatusBits
