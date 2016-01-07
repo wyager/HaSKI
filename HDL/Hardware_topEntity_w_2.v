@@ -104,7 +104,7 @@ module Hardware_topEntity_w_2(// clock
   assign altLet_9 = altLet_9_reg;
   
   Hardware_ram_11 Hardware_ram_11_x_10
-  (.y_o (x_10)
+  (.bodyVar_o (x_10)
   ,.system1000 (system1000)
   ,.system1000_rstn (system1000_rstn)
   ,.eta_i1 (x_25));
@@ -113,7 +113,7 @@ module Hardware_topEntity_w_2(// clock
   
   assign repANF_12 = ptr_19;
   
-  Hardware_binarize_12 Hardware_binarize_12_repANF_13
+  Hardware_binarize_13 Hardware_binarize_13_repANF_13
   (.topLet_o (repANF_13)
   ,.ski_i1 (x_20));
   
@@ -156,7 +156,7 @@ module Hardware_topEntity_w_2(// clock
   
   assign x_25 = altLet_o_sig[129:34];
   
-  Hardware_unbinarize_13 Hardware_unbinarize_13_repANF_26
+  Hardware_unbinarize_14 Hardware_unbinarize_14_repANF_26
   (.bodyVar_o (repANF_26)
   ,.w_i1 (ds3_27));
   

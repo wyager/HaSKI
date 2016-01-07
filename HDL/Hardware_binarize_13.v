@@ -1,5 +1,5 @@
 // Automatically generated Verilog-2001
-module Hardware_binarize_12(ski_i1
+module Hardware_binarize_13(ski_i1
                            ,topLet_o);
   input [62:0] ski_i1;
   output [63:0] topLet_o;
