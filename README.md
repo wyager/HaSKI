@@ -35,7 +35,7 @@ so that the evaluator can print things.
     * `Model.hs` contains type definitions for basic building blocks (SKI terms and pointers).
     * `StackMachine.hs` contains the core evaluator logic.
     * `MemoryEmulator/` contains some RAM simulation logic.
-      * `RAM.hs` contains a fake RAM device implemented in FPGA logic. This makes it easy to target arbitrary FPGA boards, at the expense of RAM size.
+      * `RAM.hs` contains a RAM device implemented using block RAM.
       * `Default.hs` contains default pseudo-RAM contents for a few programs.
     * `Sim/` contains evaluator simulation logic. This simulates at a higher level than the hardware simulation, so is easier for debugging.
       * `Compile.hs` contains code for compiling SKI programs (as strings) into various forms (including HaSKI machine code).
@@ -109,10 +109,10 @@ The circuit description will be placed in `verilog/Hardware`.
 
 Cλash can also generate other HDLs, like SystemVerilog or VHDL.
 
-Note that, for purposes of making this project more "plug-and-play", I don't
-use a real RAM module. RAM usage is unfortunately very different across FPGA
-boards, so I have a fake RAM module implemented in FPGA hardware. This is quite
-inefficient, so the default RAM is pretty small. It shouldn't be too hard to
+Note that, for purposes of making this project more "plug-and-play", I
+used block RAM instead of connecting to an external RAM module.
+This limits RAM to a few hundred kilobits on my cheap FGPA board.
+It shouldn't be too hard to
 implement real RAM hardware for your FPGA board, though. See
 `ramHardware` in `Haskell/Hardware.hs`.
 

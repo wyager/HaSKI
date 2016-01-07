@@ -87,7 +87,6 @@ default_stack = Stack NoSKIs (Ptr 0x100) 0
 default_heap :: Heap
 default_heap = Heap (Ptr 0x4FF)
 
-
 -- Step 2: Take the memory response and generate the next state.
 -- This may seem somewhat complicated, but there is a fair amount of
 -- conceptual redundancy. It's just a pain to deal with all the different

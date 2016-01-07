@@ -5,9 +5,8 @@ import CLaSH.Prelude
 -- The contents of memory.
 -- Starts with the compiled SKI program and has zeroes everywhere else.
 -- Note that, for purposes of making this project easy to compile to different
--- FPGA families, we are "simulating" RAM in FPGA hardware.
--- This is horrendously inefficient, so we can't have very much "RAM".
--- See Hardware.hs for more details.
+-- FPGA families, we are using block RAM. This limits our RAM to a few
+-- hundred kilobits.
 defaultContents :: Vec 0x500 (BitVector 64)
 defaultContents = hello4 ++ repeat 0
 
