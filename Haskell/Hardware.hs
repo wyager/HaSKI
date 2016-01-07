@@ -43,10 +43,10 @@ cpuHardware :: Signal RAMStatusBits
 cpuHardware = fmap convert . cpu . fmap ramstatus
     where convert (ram,out,done) = (ramaction ram, output out, halt done)
 
--- NB: We are not using "real" external RAM; we are using block RAM.
--- Block RAM is fast single-cycle RAM built into the FPGA. If you look at
--- the definition of "ram", you'll see that we use Clash's blockRam
--- primitive. This generates code that most synthesis tools will recognize
+-- NB: For portability, we are not using "real" external RAM; we are using
+-- block RAM. Block RAM is fast single-cycle RAM built into the FPGA. See
+-- the definition of "ram"; we're using Clash's blockRam primitive.
+-- This generates code that most synthesis tools will recognize
 -- as block RAM. Unfortunately, most FPGAs only have block RAM in the hundreds
 -- of kilobits or low megabits.
 -- If you'd like, you can replace this with actual RAM hardware for your FPGA.

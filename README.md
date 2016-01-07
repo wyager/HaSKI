@@ -127,9 +127,6 @@ make cpu
 ./cpu
 ```
 
-This is a very low-level simulation and `iverilog` is not very fast,
-so this takes a while.
-
 This prints a `.` if there is no output that cycle, a character if there
 is output that cycle, and stops when the CPU halts (runs out of code to
 execute).
