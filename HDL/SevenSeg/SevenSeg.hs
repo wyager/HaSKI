@@ -18,10 +18,10 @@ next 3 = 0
 next n = n + 1
 
 anode :: Index 4 -> BitVector 4
-anode 0 = 0b0001
-anode 1 = 0b0010
-anode 2 = 0b0100
-anode 3 = 0b1000
+anode 0 = 0b1110
+anode 1 = 0b1101
+anode 2 = 0b1011
+anode 3 = 0b0111
 
 convert :: Unsigned 32 -> BitVector 8
 convert 104 = 0b01110100 -- 'h'
