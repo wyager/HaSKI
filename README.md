@@ -4,6 +4,8 @@
 
 ![gif](http://i.imgur.com/qqEDcNw.gif)
 
+Blog post: [yager.io/HaSKI/HaSKI.html](http://yager.io/HaSKI/HaSKI.html)
+
 HaSKI is my attempt at building a reasonably simple hardware-based evaluator
 for the dead-simple, turing-complete [SKI combinator calculus](https://en.wikipedia.org/wiki/SKI_combinator_calculus).
 
