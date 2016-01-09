@@ -24,15 +24,15 @@ anode 2 = 0b0100
 anode 3 = 0b1000
 
 convert :: Unsigned 32 -> BitVector 8
-convert 104 = 0b00101110 -- 'h'
-convert 101 = 0b11011110 -- 'e'
-convert 108 = 0b00001100 -- 'l'
-convert 111 = 0b00111010 -- 'o'
-convert 95  = 0b00010000 -- '_'
-convert 119 = 0b01010100 -- 'w'
-convert 114 = 0b10001100 -- 'r'
-convert 100 = 0b01111010 -- 'd'
-convert 33  = 0b01000001 -- '!'
+convert 104 = 0b01110100 -- 'h'
+convert 101 = 0b01111011 -- 'e'
+convert 108 = 0b00110000 -- 'l'
+convert 111 = 0b01011100 -- 'o'
+convert 95  = 0b00001000 -- '_'
+convert 119 = 0b00101010 -- 'w'
+convert 114 = 0b00110001 -- 'r'
+convert 100 = 0b01011110 -- 'd'
+convert 33  = 0b10000010 -- '!'
 convert _   = 0
 
 display :: Signal (Vec 4 (Unsigned 32)) -> Signal (BitVector 4, BitVector 8)

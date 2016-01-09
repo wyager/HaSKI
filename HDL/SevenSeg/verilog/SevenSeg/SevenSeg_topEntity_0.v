@@ -55,15 +55,15 @@ module SevenSeg_topEntity_0(outputs_i1
   reg [7:0] bodyVar_5_reg;
   always @(*) begin
     case(bodyVar_4)
-      32'd104 : bodyVar_5_reg = 8'b11111111 ^ 8'b00101110;
-      32'd101 : bodyVar_5_reg = 8'b11111111 ^ 8'b11011110;
-      32'd108 : bodyVar_5_reg = 8'b11111111 ^ 8'b00001100;
-      32'd111 : bodyVar_5_reg = 8'b11111111 ^ 8'b00111010;
-      32'd95 : bodyVar_5_reg = 8'b11111111 ^ 8'b00010000;
-      32'd119 : bodyVar_5_reg = 8'b11111111 ^ 8'b01010100;
-      32'd114 : bodyVar_5_reg = 8'b11111111 ^ 8'b10001100;
-      32'd100 : bodyVar_5_reg = 8'b11111111 ^ 8'b01111010;
-      32'd33 : bodyVar_5_reg = 8'b11111111 ^ 8'b01000001;
+      32'd104 : bodyVar_5_reg = 8'b11111111 ^ 8'b01110100;
+      32'd101 : bodyVar_5_reg = 8'b11111111 ^ 8'b01111011;
+      32'd108 : bodyVar_5_reg = 8'b11111111 ^ 8'b00110000;
+      32'd111 : bodyVar_5_reg = 8'b11111111 ^ 8'b01011100;
+      32'd95 : bodyVar_5_reg = 8'b11111111 ^ 8'b00001000;
+      32'd119 : bodyVar_5_reg = 8'b11111111 ^ 8'b00101010;
+      32'd114 : bodyVar_5_reg = 8'b11111111 ^ 8'b00110001;
+      32'd100 : bodyVar_5_reg = 8'b11111111 ^ 8'b01011110;
+      32'd33 : bodyVar_5_reg = 8'b11111111 ^ 8'b10000010;
       default : bodyVar_5_reg = 8'b11111111 ^ 8'b00000000;
     endcase
   end
