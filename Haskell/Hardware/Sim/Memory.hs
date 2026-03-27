@@ -4,7 +4,7 @@
 module Hardware.Sim.Memory (memulate, fromStack, Memory, RAMState, RAMStatus'(..), RAMAction'(..)) where
 
 import Clash.Prelude (Unsigned, Index, Signal, System, HiddenClockResetEnable,
-                      register, bundle, NFDataX, Generic)
+                      register, bundle, NFDataX(..), Generic)
 
 import Prelude hiding (read)
 
