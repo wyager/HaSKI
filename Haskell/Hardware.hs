@@ -1,6 +1,7 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Hardware (topEntity) where
 
-import CLaSH.Prelude
+import Clash.Prelude
 import Hardware.CPU (cpu, Halt(DoHalt, Don'tHalt))
 import Hardware.MMU (
     RAMStatus(NoUpdate, ReadComplete, WriteComplete),
@@ -23,6 +24,7 @@ ramstatus :: RAMStatusBits -> RAMStatus
 ramstatus (0,_,_) = NoUpdate
 ramstatus (1,0,s) = ReadComplete (unbinarize s)
 ramstatus (1,1,_) = WriteComplete
+ramstatus _       = NoUpdate  -- unreachable, pacify -Wincomplete-patterns
 
 ramaction :: RAMAction -> RAMActionBits
 ramaction (R ptr)   = (1, 0, binarizePtr ptr, 0)
@@ -38,8 +40,9 @@ halt DoHalt    = 1
 halt Don'tHalt = 0
 
 -- NB: cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output, Halt)
-cpuHardware :: Signal RAMStatusBits
-            -> Signal (RAMActionBits, OutputBits, HaltBit)
+cpuHardware :: HiddenClockResetEnable System
+            => Signal System RAMStatusBits
+            -> Signal System (RAMActionBits, OutputBits, HaltBit)
 cpuHardware = fmap convert . cpu . fmap ramstatus
     where convert (ram,out,done) = (ramaction ram, output out, halt done)
 
@@ -53,12 +56,27 @@ cpuHardware = fmap convert . cpu . fmap ramstatus
 -- This project uses 30-bit pointers to 64-bit words, so you could potentially
 -- use up to 8GiB without much trouble. However, be warned that real RAM
 -- tends to be much more complicated and platform-specific.
-ramHardware :: Signal RAMActionBits -> Signal RAMStatusBits
+ramHardware :: HiddenClockResetEnable System
+            => Signal System RAMActionBits -> Signal System RAMStatusBits
 ramHardware = ram defaultContents
 
--- The thing that gets synthesized to an HDL
-topEntity :: Signal (OutputBits, HaltBit)
-topEntity = bundle (output, halt)
+-- The core evaluator loop, factored out so topEntity can thread in
+-- clock/reset via withClockResetEnable.
+haski :: HiddenClockResetEnable System
+      => Signal System (OutputBits, HaltBit)
+haski = bundle (out, hlt)
     where
-    (ramRequest, output, halt) = unbundle $ cpuHardware ramResponse
+    (ramRequest, out, hlt) = unbundle $ cpuHardware ramResponse
     ramResponse = ramHardware ramRequest
+
+-- The thing that gets synthesized to an HDL. Modern Clash requires
+-- explicit Clock/Reset ports; enableGen suppresses the Enable port.
+topEntity :: Clock System -> Reset System -> Signal System (OutputBits, HaltBit)
+topEntity clk rst = withClockResetEnable clk rst enableGen haski
+{-# ANN topEntity
+  (Synthesize
+    { t_name   = "haski"
+    , t_inputs = [PortName "clk", PortName "rst"]
+    , t_output = PortName "out"
+    }) #-}
+{-# NOINLINE topEntity #-}

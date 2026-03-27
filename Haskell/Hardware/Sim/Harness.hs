@@ -1,6 +1,7 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Hardware.Sim.Harness (evaluate) where
 
-import CLaSH.Prelude hiding (read)
+import Clash.Prelude hiding (read)
 
 import Hardware.Model (Ptr(..), Output, binarize, unbinarize)
 
@@ -27,7 +28,8 @@ unserialize (ReadComplete' (Model.W w)) = ReadComplete (unbinarize w)
 unserialize WriteComplete'              = WriteComplete
 
 
-evaluate :: Memory -> Signal (Maybe Output, Halt)
+evaluate :: HiddenClockResetEnable System
+         => Memory -> Signal System (Maybe Output, Halt)
 evaluate program = bundle (outputs, halt)
     where
     (actions, outputs, halt) = unbundle $ cpu (unserialize <$> mem_reads)

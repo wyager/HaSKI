@@ -1,9 +1,11 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Hardware.StackMachine (
     State(Initializing),
     step1, step2, outputOf, terminal
 ) where
 
-import CLaSH.Prelude hiding (Read)
+import Clash.Prelude hiding (Read)
 
 import Hardware.Model (Ptr(Ptr), SKI(S,K,I,T,L), Output)
 
@@ -16,27 +18,30 @@ import Text.Printf (printf)
 -- We need to keep up to 3 items in the cache for fast S evaluation.
 -- base is where the next write will go. The head of the stack is base - 1
 data Stack = Stack {cache :: SKIs, base :: Ptr, count :: Unsigned 30}
+    deriving (Generic, NFDataX)
 instance Show Stack where
     show (Stack cache (Ptr base) count) = printf "Stack@%08x [%d in memory] {%s}" (fromEnum base) (fromEnum count) (show cache)
 
-data SKIs = NoSKIs | OneSKI SKI | TwoSKIs SKI SKI | ThreeSKIs SKI SKI SKI deriving (Show)
+data SKIs = NoSKIs | OneSKI SKI | TwoSKIs SKI SKI | ThreeSKIs SKI SKI SKI
+    deriving (Show, Generic, NFDataX)
 
 -- We're using a very wasteful non-freeing heap.
 -- We could implement e.g. garbage collection (?) or reference counting,
 -- but that's beyond this project.
 -- tip is where the next write will go.
 -- Heap grows down.
-data Heap = Heap {tip :: Ptr} deriving (Show)
+data Heap = Heap {tip :: Ptr} deriving (Show, Generic, NFDataX)
 
 -- The current state of the evaluator.
 -- For a clearer explanation of how the evaluator works,
 -- see the (non-hardware-implementable) model evaluator.
-data State = Initializing | State {stack :: Stack, heap :: Heap, current :: SKI} | Terminal deriving (Show)
+data State = Initializing | State {stack :: Stack, heap :: Heap, current :: SKI} | Terminal
+    deriving (Show, Generic, NFDataX)
 
 -- The first step: Generate memory requests.
 -- Behavior varies depending on how many things are in the stack cache.
 -- Therefore, this function switches on the contents of the stack cache.
--- CLaSH and synthesis optimizers should lift reduntant expressions.
+-- Clash and synthesis optimizers should lift redundant expressions.
 step1 :: State -> MemRequest
 step1 Terminal = MemRequest Zero Zero -- We are done. Nothing to request.
 step1 Initializing = MemRequest (One (Read (Ptr 0))) Zero -- Read the start of the program.

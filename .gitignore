@@ -1,2 +1,5 @@
 .DS_Store
 *.hex
+Haskell/build/
+Haskell/Main
+Haskell/Tests

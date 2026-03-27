@@ -1,16 +1,21 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
 
 module Hardware.Model (
     Ptr(Ptr), SKI(S,K,I,T,L), Output(Output), W(W),
     binarize, unbinarize, binarizePtr
 ) where
 
-import CLaSH.Prelude
+import Clash.Prelude
 
 import Text.Printf (printf)
 
 -- Machine word
 data W = W (BitVector 64)
+    deriving stock    (Generic)
+    deriving anyclass (NFDataX)
 
 instance Show W where
     show (W v) = printf "[W 0x%02x 0x%08x 0x%08x]" tag a b
@@ -22,25 +27,32 @@ instance Show W where
 -- 30-bit pointers to 64-bit words
 -- Why? We want to fit two pointers plus 3 tag bits in a word.
 -- This way, a whole SKI fits in a word.
-newtype Ptr = Ptr (Unsigned 30) deriving (Show, Enum, Num)
+newtype Ptr = Ptr (Unsigned 30)
+    deriving newtype  (Show, Enum, Num)
+    deriving stock    (Generic)
+    deriving anyclass (NFDataX)
 
 -- SKI combinators.
 -- We also have T (which represents the conjuction of two SKIs).
 -- For example, the program (KSI) is represented as T (T K S) I.
 -- We also have "L" combinators, which are like I except they produce output.
 -- If a program terminates, it should terminate on an L.
-data SKI = S | K | I | T Ptr Ptr | L Output deriving (Show)
+data SKI = S | K | I | T Ptr Ptr | L Output
+    deriving stock    (Show, Generic)
+    deriving anyclass (NFDataX)
 
 -- 32-bit output values
-data Output = Output (Unsigned 32) deriving (Show)
+data Output = Output (Unsigned 32)
+    deriving stock    (Show, Generic)
+    deriving anyclass (NFDataX)
 
 binarize :: SKI -> BitVector 64
 binarize ski = case ski of
-    S     -> tag 0 ++# 0
-    K     -> tag 1 ++# 0
-    I     -> tag 2 ++# 0
+    S     -> tag 0 ++# (0 :: BitVector 60)
+    K     -> tag 1 ++# (0 :: BitVector 60)
+    I     -> tag 2 ++# (0 :: BitVector 60)
     T a b -> tag 3 ++# binarizePtr a ++# binarizePtr b
-    L o   -> tag 4 ++# 0 ++# binarizeOutput o
+    L o   -> tag 4 ++# (0 :: BitVector 28) ++# binarizeOutput o
     where
     -- Just makes it clear that the tag should be 4 bits long.
     tag :: BitVector 4 -> BitVector 4
@@ -59,6 +71,7 @@ unbinarize w = case tag of
     2 -> I
     3 -> T a b
     4 -> L o
+    _ -> errorX "unbinarize: invalid SKI tag (expected 0-4)"
     where
     tag = slice d63 d60 w
     a = unbinarizePtr $ slice d59 d30 w

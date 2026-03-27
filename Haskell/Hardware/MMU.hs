@@ -1,26 +1,28 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Hardware.MMU (
     Pending, RAMStatus(..), RAMAction(..),
     initiate, next, service, check
 ) where
 
-import CLaSH.Prelude
+import Clash.Prelude hiding (Read)
 
 import Hardware.Model (SKI,Ptr)
 
 import Hardware.Defs (MemRequest(..),MemResponse(..),Some(Zero,One,Two),Write(..),Read(..))
 
-data Pending = Pending Reading Reading Writing Writing deriving Show
+data Pending = Pending Reading Reading Writing Writing deriving (Show, Generic, NFDataX)
 
-data Reading = NotReading | Reading Ptr | DidRead SKI deriving Show
+data Reading = NotReading | Reading Ptr | DidRead SKI deriving (Show, Generic, NFDataX)
 
-data Writing = NotWriting | Writing Ptr SKI | Written deriving Show
+data Writing = NotWriting | Writing Ptr SKI | Written deriving (Show, Generic, NFDataX)
 
-data RAMStatus = NoUpdate | ReadComplete SKI | WriteComplete
+data RAMStatus = NoUpdate | ReadComplete SKI | WriteComplete deriving (Generic, NFDataX)
 
 data RAMAction = R Ptr     -- Read
                | W Ptr SKI -- Write
                | X         -- Nothing
-               deriving Show
+               deriving (Show, Generic, NFDataX)
 
 -- Take a fresh MemRequest and turn it into a pending memory operation.
 initiate :: MemRequest -> Pending

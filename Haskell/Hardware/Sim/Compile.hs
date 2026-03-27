@@ -1,6 +1,6 @@
 module Hardware.Sim.Compile (compile, format, encode) where
 
-import CLaSH.Prelude (BitVector)
+import Clash.Prelude (BitVector)
 
 import Prelude
 

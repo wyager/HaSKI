@@ -1,8 +1,9 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BinaryLiterals #-}
 
 module SevenSeg (topEntity) where
 
-import CLaSH.Prelude
+import Clash.Prelude
 
 {-
    A
@@ -35,10 +36,16 @@ convert 100 = 0b01011110 -- 'd'
 convert 33  = 0b10000010 -- '!'
 convert _   = 0
 
-display :: Signal (Vec 4 (Unsigned 32)) -> Signal (BitVector 4, BitVector 8)
+display :: HiddenClockResetEnable System
+        => Signal System (Vec 4 (Unsigned 32))
+        -> Signal System (BitVector 4, BitVector 8)
 display outputs = bundle (anode <$> active, cathodes)
     where
     cathodes = (xor 0xFF . convert) <$> liftA2 (!!) outputs active
     active = register 0 (next <$> active)
 
-topEntity = display
+topEntity :: Clock System -> Reset System
+          -> Signal System (Vec 4 (Unsigned 32))
+          -> Signal System (BitVector 4, BitVector 8)
+topEntity clk rst inp = withClockResetEnable clk rst enableGen (display inp)
+{-# NOINLINE topEntity #-}

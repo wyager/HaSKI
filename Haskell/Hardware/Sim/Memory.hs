@@ -1,6 +1,10 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Hardware.Sim.Memory (memulate, fromStack, Memory, RAMState, RAMStatus'(..), RAMAction'(..)) where
 
-import CLaSH.Prelude (Unsigned, Index, Signal, register, bundle)
+import Clash.Prelude (Unsigned, Index, Signal, System, HiddenClockResetEnable,
+                      register, bundle, NFDataX(..), Generic)
 
 import Prelude hiding (read)
 
@@ -14,20 +18,34 @@ import Data.List (intercalate)
 
 type U30 = Unsigned 30
 
+-- Simulation-only: Memory is backed by a Data.Map, not synthesizable.
+-- We only need an NFDataX instance because RAMState (which holds a Memory)
+-- sits in a register. deepErrorX deliberately uses plain `error` instead of
+-- XException — a Map-backed memory has no meaningful "undefined" state, so
+-- if anything ever calls errorX on it we'd rather hard-fail than silently
+-- propagate X bits. Memory is always constructed via fromStack in practice.
 data Memory = Memory (Map U30 W)
+instance NFDataX Memory where
+    deepErrorX = error
+    rnfX _ = ()
+    hasUndefined _ = False
+    ensureSpine = id
 
-data State = Idle | Reading Ptr (Index 10) | Writing Ptr W (Index 10) deriving Show
+data State = Idle | Reading Ptr (Index 10) | Writing Ptr W (Index 10)
+    deriving (Show, Generic, NFDataX)
 
-data RAMState = RS State Memory deriving Show
+data RAMState = RS State Memory deriving (Show, Generic, NFDataX)
 
 data RAMStatus' = NoUpdate' | ReadComplete' W | WriteComplete'
+    deriving (Generic, NFDataX)
 
 data RAMAction' = R' Ptr     -- Read
                 | W' Ptr W -- Write
                 | X'         -- Nothing
-                deriving Show
+                deriving (Show, Generic, NFDataX)
 
-memulate :: Memory -> Signal RAMAction' -> Signal (RAMStatus', RAMState)
+memulate :: HiddenClockResetEnable System
+         => Memory -> Signal System RAMAction' -> Signal System (RAMStatus', RAMState)
 memulate initial actions = bundle (outputOf <$> mem, mem)
     where
     actions' = register X' actions
