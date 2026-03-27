@@ -71,6 +71,7 @@ unbinarize w = case tag of
     2 -> I
     3 -> T a b
     4 -> L o
+    _ -> errorX "unbinarize: invalid SKI tag (expected 0-4)"
     where
     tag = slice d63 d60 w
     a = unbinarizePtr $ slice d59 d30 w
