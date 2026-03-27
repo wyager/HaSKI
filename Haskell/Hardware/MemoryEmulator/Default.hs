@@ -1,6 +1,6 @@
 module Hardware.MemoryEmulator.Default (defaultContents) where
 
-import CLaSH.Prelude
+import Clash.Prelude
 
 -- The contents of memory.
 -- Starts with the compiled SKI program and has zeroes everywhere else.

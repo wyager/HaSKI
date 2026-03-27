@@ -1,7 +1,7 @@
 module Main where
 
 import Prelude
-import CLaSH.Prelude (BitVector)
+import Clash.Prelude (BitVector)
 import Hardware.Sim.Compile (compile, encode)
 import Text.Printf (printf)
 import Data.List (intercalate)

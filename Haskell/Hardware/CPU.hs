@@ -1,6 +1,9 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Hardware.CPU (CPUState, Halt(..), cpu) where
 
-import CLaSH.Prelude
+import Clash.Prelude
 
 import Hardware.StackMachine (State(Initializing),
     step1, step2, outputOf, terminal)
@@ -11,13 +14,13 @@ import Hardware.MMU (Pending, RAMStatus(NoUpdate), RAMAction(X),
 import Hardware.Model (Output(..))
 
 -- Halt?
-data Halt = DoHalt | Don'tHalt deriving Show
+data Halt = DoHalt | Don'tHalt deriving (Show, Generic, NFDataX)
 
 -- Are we waiting for a single memory action (read/write/etc.) to complete?
-data Waiting = No | Yes deriving Show
+data Waiting = No | Yes deriving (Show, Generic, NFDataX)
 
 -- We need to keep track of the evaluator state as well as the MMU state.
-data CPUState = CPU State Pending Waiting deriving Show
+data CPUState = CPU State Pending Waiting deriving (Show, Generic, NFDataX)
 
 -- The state of the MMU when the CPU is initialized.
 -- If you look at the definition of step1, this corresponds
@@ -50,14 +53,16 @@ step (CPU state pending _  ) update   = (CPU state' pending'' waiting', action, 
 checkIfDone :: CPUState -> Halt
 checkIfDone (CPU state _ _) = if terminal state then DoHalt else Don'tHalt
 
-cpu :: Signal RAMStatus -> Signal (RAMAction, Maybe Output, Halt)
+cpu :: HiddenClockResetEnable System
+    => Signal System RAMStatus
+    -> Signal System (RAMAction, Maybe Output, Halt)
 cpu ramstatus = bundle (action, output, halt)
     where
-    state  :: Signal CPUState
+    state  :: Signal System CPUState
     state = register (CPU Initializing bootup No) state'
-    state' :: Signal CPUState
-    action :: Signal RAMAction
-    output :: Signal (Maybe Output)
+    state' :: Signal System CPUState
+    action :: Signal System RAMAction
+    output :: Signal System (Maybe Output)
     (state', action, output) = unbundle $ step <$> state <*> ramstatus
-    halt   :: Signal Halt
+    halt   :: Signal System Halt
     halt = checkIfDone <$> state
