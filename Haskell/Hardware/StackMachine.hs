@@ -41,7 +41,7 @@ data State = Initializing | State {stack :: Stack, heap :: Heap, current :: SKI}
 -- The first step: Generate memory requests.
 -- Behavior varies depending on how many things are in the stack cache.
 -- Therefore, this function switches on the contents of the stack cache.
--- CLaSH and synthesis optimizers should lift reduntant expressions.
+-- Clash and synthesis optimizers should lift redundant expressions.
 step1 :: State -> MemRequest
 step1 Terminal = MemRequest Zero Zero -- We are done. Nothing to request.
 step1 Initializing = MemRequest (One (Read (Ptr 0))) Zero -- Read the start of the program.
