@@ -5,13 +5,7 @@ See `README.md` for what HaSKI actually does (SKI combinator evaluator).
 ## Requirements
 
 Same as any Clash 1.8 project — see Lambda16/BUILD.md for the cabal
-install recipe, or use the `fmax-hdl` Docker image:
-
-```bash
-docker run --rm -v $PWD:/src -w /src/Haskell \
-    us-east1-docker.pkg.dev/gcp-taiga/envfactory/fmax-hdl:v6 \
-    clash --verilog Hardware.hs
-```
+install recipe.
 
 ## Generate HDL
 
